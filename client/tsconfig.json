@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "strict": false,                      // Disables all strict type-checking options
+    "noImplicitAny": false,               // Allows `any` type inference
+    "strictNullChecks": false,            // Allows `null` and `undefined` for all types
+    "strictFunctionTypes": false,         // Loosens function type checks
+    "strictPropertyInitialization": false,// Allows properties to be uninitialized
+    "noUnusedLocals": false,              // Doesn't warn on unused variables
+    "noUnusedParameters": false,          // Doesn't warn on unused function parameters
+    "noImplicitReturns": false,           // Doesn't warn on functions without a return
+    "skipLibCheck": true,                 // Skip type checking of declaration files
+    "jsx": "react-jsx",                   // Enable JSX for React 17+
+    "moduleResolution": "node",           // Resolve modules like Node.js does
+    "target": "es2020",                   // Change to 'es2020' or 'esnext'
+    "module": "es2020",                   // Set module to 'es2020' or 'esnext'
+    "sourceMap": true,
+    "removeComments": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "exclude": ["node_modules"],
+  "include": [
+    "src/**/*",
+    "vite.config.ts"              // Include vite.config.ts
+  ]
+}

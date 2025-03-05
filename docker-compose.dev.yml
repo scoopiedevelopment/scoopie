@@ -1,0 +1,63 @@
+version: '3.9'
+
+services:
+  mongo:
+    container_name: mongo_container
+    image: 'mongo'
+    volumes:
+      - mongo-data:/data/db
+      - ./mongo-keyfile:/data/db/mongo-keyfile
+    networks:
+      - queue-net
+    env_file: 
+      - ./.env.development
+    command: mongod --replSet rs0 --bind_ip_all --keyFile /data/db/mongo-keyfile
+    restart: always
+
+  # client:
+  #   container_name: client
+  #   build:
+  #     context: ./client
+  #     dockerfile: docker/development/Dockerfile
+  #   ports:
+  #     - '5173:5173'
+  #   restart: always
+  #   env_file: 
+  #     - ./.env.development
+  #   volumes:
+  #     - ./client/src:/usr/src/app/src
+  #     - ./client/package.json:/usr/src/app/package.json
+  #     - ./client/tsconfig.json:/usr/src/app/tsconfig.json
+  #     - ./tsconfig.json:/usr/tsconfig.json
+  #   depends_on:
+  #     - server
+  #   networks:
+  #     - queue-net
+
+  server:
+    container_name: server
+    build:
+      context: ./server
+      dockerfile: docker/development/Dockerfile
+    ports:
+      - '5000:5000'
+      - '5555:5555'
+    env_file: 
+      - ./.env.development
+    volumes:
+      - ./server/src:/usr/src/app/src
+      - ./server/package.json:/usr/src/app/package.json
+      - ./server/tsconfig.json:/usr/src/app/tsconfig.json
+      - ./server/nodemon.json:/usr/src/app/nodemon.json
+      - ./tsconfig.json:/usr/tsconfig.json
+    depends_on:
+      - mongo
+    networks:
+      - queue-net
+
+networks:
+  queue-net:
+    driver: bridge
+
+volumes:
+  mongo-data:

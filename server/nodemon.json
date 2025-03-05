@@ -1,0 +1,5 @@
+{
+  "ext": "ts",
+  "ignore": ["dist", "node_modules"],
+  "exec": "npx ts-node --project tsconfig.json src/server.ts"
+}
