@@ -15,6 +15,11 @@ enum ProfileType {
   BUSINESS
 }
 
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
 model User {
   id              String  @id @map("_id") @default(auto()) @db.ObjectId
   email           String? 
@@ -38,6 +43,7 @@ model Profile {
   website         String?
   profilePic      String?
   type            ProfileType @default(PUBLIC)
+  posts           Post[]
   following       Follow[] @relation("following")
   followers       Follow[] @relation("followers")
   createdAt       DateTime @default(now())
@@ -53,4 +59,22 @@ model Follow {
   @@unique([followerId, followingId])
   @@index([followingId])
   @@index([followerId])
+}
+
+model Post {
+  id          String @id @map("_id") @default(auto()) @db.ObjectId
+  userId      String @db.ObjectId
+  user        Profile @relation(fields: [userId], references: [id])
+  text        String?
+  media       Media[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Media {
+  id          String @id @map("_id") @default(auto()) @db.ObjectId
+  postId      String @db.ObjectId
+  post        Post @relation(fields: [postId], references: [id])
+  type        MediaType
+  createdAt   DateTime  @default(now())
 }

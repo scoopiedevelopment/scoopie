@@ -12,6 +12,11 @@ export default {
     ACCESS_TOKEN: {
         SECRET: process.env.ACCESS_TOKEN_SECRET,
         EXPIRY: 3600 * 24 * 7
+    },
+    IMAGE_KIT: {
+        PUBLICKEY: process.env.IMAGEKIT_PUBLIC_KEY,
+        PRIVATEKEY: process.env.IMAGEKIT_PRIVATE_KEY,
+        URLENDPOINT: process.env.IMAGEKIT_URL_ENDPOINT,
     }
     
 }

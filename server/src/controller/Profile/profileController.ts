@@ -54,7 +54,6 @@ export default {
 
         } catch (error) {
             console.error("Error in creating profile.", error);
-            
             httpError(next, error, req, 500);
         }
     },
