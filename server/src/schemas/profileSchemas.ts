@@ -7,7 +7,7 @@ export const createProfileSchema = z.object({
   dateofBirth: z.coerce.date().nullable().optional(),
   website: z.string().url("Invalid URL format").nullable().optional(),
   profilePic: z.string().url("Invalid URL format").nullable().optional(),
-  type: z.enum(["PUBLIC", "PRIVATE", "BUSINESS"]).default("PUBLIC")
+  type: z.enum(["Public", "Private", "Business"]).default("Public")
 });
 
 export const updateProfileSchema = z.object({
@@ -17,5 +17,5 @@ export const updateProfileSchema = z.object({
   dateofBirth: z.coerce.date().optional(),
   website: z.string().url("Invalid URL format").optional(),
   profilePic: z.string().url("Invalid URL format").optional(),
-  type: z.enum(["PUBLIC", "PRIVATE", "BUSINESS"]).default("PUBLIC")
+  type: z.enum(["Public", "Private", "Business"]).default("Public")
 });

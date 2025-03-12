@@ -13,8 +13,7 @@ export default {
                 return httpError(next, new Error("Only one file is allowed."), req, 500);
             }
 
-            const uploadedFiles = await uploadToImageKit(req.file)
-            
+            const uploadedFiles = await uploadToImageKit(req.file);
             const responseBody = {
                 url: uploadedFiles.url
             }

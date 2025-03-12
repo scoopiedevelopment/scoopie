@@ -10,14 +10,14 @@ datasource db {
 }
 
 enum ProfileType {
-  PUBLIC
-  PRIVATE
-  BUSINESS
+  Public
+  Private
+  Business
 }
 
 enum MediaType {
-  IMAGE
-  VIDEO
+  Image
+  Video
 }
 
 model User {
@@ -42,7 +42,7 @@ model Profile {
   dateofBirth     DateTime?
   website         String?
   profilePic      String?
-  type            ProfileType @default(PUBLIC)
+  type            ProfileType @default(Public)
   posts           Post[]
   following       Follow[] @relation("following")
   followers       Follow[] @relation("followers")
@@ -64,11 +64,13 @@ model Follow {
 model Post {
   id          String @id @map("_id") @default(auto()) @db.ObjectId
   userId      String @db.ObjectId
-  user        Profile @relation(fields: [userId], references: [id])
+  user        Profile @relation(fields: [userId], references: [userId])
   text        String?
   media       Media[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model Media {
@@ -76,5 +78,8 @@ model Media {
   postId      String @db.ObjectId
   post        Post @relation(fields: [postId], references: [id])
   type        MediaType
+  url         String
   createdAt   DateTime  @default(now())
+
+  @@index([postId])
 }

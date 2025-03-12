@@ -23,7 +23,6 @@ export const validateRequest = (schema: ZodSchema) => {
             });
             return;
         }
-
         req.body = result.data;
         next();
     }
