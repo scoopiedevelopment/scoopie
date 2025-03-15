@@ -13,5 +13,5 @@ export async function uploadToImageKit(file: Express.Multer.File) {
     fileName: file.originalname,
     folder: "/uploads/",
   });
-  }
+}
   

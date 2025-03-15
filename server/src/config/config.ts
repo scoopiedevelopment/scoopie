@@ -17,6 +17,7 @@ export default {
         PUBLICKEY: process.env.IMAGEKIT_PUBLIC_KEY,
         PRIVATEKEY: process.env.IMAGEKIT_PRIVATE_KEY,
         URLENDPOINT: process.env.IMAGEKIT_URL_ENDPOINT,
-    }
+    },
+    REDIS_URL: process.env.REDIS_URL
     
 }

@@ -15,6 +15,12 @@ enum ProfileType {
   Business
 }
 
+enum Visibility {
+  Public
+  Private
+  Archive
+}
+
 enum MediaType {
   Image
   Video
@@ -44,6 +50,8 @@ model Profile {
   profilePic      String?
   type            ProfileType @default(Public)
   posts           Post[]
+  likes           Like[]
+  comments        Comment[]
   following       Follow[] @relation("following")
   followers       Follow[] @relation("followers")
   createdAt       DateTime @default(now())
@@ -67,9 +75,11 @@ model Post {
   user        Profile @relation(fields: [userId], references: [userId])
   text        String?
   media       Media[]
+  visibility  Visibility @default(Public)
+  likes       Like[]
+  comments    Comment[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
   @@index([userId])
 }
 
@@ -82,4 +92,24 @@ model Media {
   createdAt   DateTime  @default(now())
 
   @@index([postId])
+}
+
+model Like {
+  id          String @id @map("_id") @default(auto()) @db.ObjectId
+  postId      String @db.ObjectId
+  post        Post @relation(fields: [postId], references: [id])
+  likedById   String @db.ObjectId 
+  likedBy     Profile @relation(fields: [likedById], references: [userId])
+  createdAt  DateTime @default(now())
+
+  @@unique([postId, likedById])
+}
+
+model Comment {
+  id        String @id @map("_id") @default(auto()) @db.ObjectId
+  postId      String @db.ObjectId
+  post        Post @relation(fields: [postId], references: [id])
+  commentById   String @db.ObjectId 
+  commentBy     Profile @relation(fields: [commentById], references: [userId])
+  createdAt  DateTime @default(now())
 }
