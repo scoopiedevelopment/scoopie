@@ -4,6 +4,7 @@ import httpResponse from "../../util/httpResponse";
 import responseMessage from "../../constant/responseMessage";
 import httpError from "../../util/httpError";
 import { prisma } from "../../util/prisma";
+import { User } from "../Authentication/types";
 
 
 
@@ -12,13 +13,15 @@ export default {
 
         try {
             const { postId } = req.body;
-            const user = req.user;
+            const user = req.user as User;
             const likeKey = `like_count:${postId}`;
             const userLikeKey = `user_liked:${postId}`;
 
             let hasLiked: boolean = !!(await redis.sismember(userLikeKey, user!.userId));
 
             if (!hasLiked) {
+                console.log("add");
+                
                 const existingLike = await prisma.like.findFirst({
                     where: { postId, likedById: user!.userId },
                 });
@@ -31,8 +34,10 @@ export default {
             }
     
             if (hasLiked) {
+                console.log("yaha");
+                
                 await redis.decr(likeKey);
-                await redis.sadd(userLikeKey, user!.userId);
+                await redis.srem(userLikeKey, user!.userId);
                 return httpResponse(req, res, 200, responseMessage.UNLIKED, null);
             }
     

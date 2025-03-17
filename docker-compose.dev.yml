@@ -40,8 +40,8 @@ services:
       context: ./server
       dockerfile: docker/development/Dockerfile
     ports:
-      - '5000:5000'
-      - '5555:5555'
+      - '8080:5000'
+      - '8888:5555'
     env_file: 
       - ./.env.development
     volumes:
@@ -50,6 +50,7 @@ services:
       - ./server/tsconfig.json:/usr/src/app/tsconfig.json
       - ./server/nodemon.json:/usr/src/app/nodemon.json
       - ./tsconfig.json:/usr/tsconfig.json
+      - ./vision-key.json:/usr/src/app/vision-key.json
     depends_on:
       - mongo
     networks:

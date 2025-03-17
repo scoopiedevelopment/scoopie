@@ -7,56 +7,6 @@ import { User } from "../Authentication/types";
 
 
 export default {
-
-    create: async (req: Request, res: Response, next: NextFunction) => {
-        try {
-        
-            const {
-                username,
-                name,
-                bio,
-                dateofBirth,
-                website,
-                profilePic,
-                type
-            } = req.body;
-
-            const user = req.user as User;
-
-            const existingProfile = await prisma.profile.findFirst({
-                where: {
-                    OR: [
-                        { userId: user.userId},
-                        { username }
-                    ]
-                }
-            });
-
-            if(existingProfile) {
-                return httpError(next, new Error("User already exists."), req, 400)
-            }
-            
-            await prisma.profile.create({
-                data: {
-                    userId: user.userId,
-                    username,
-                    name,
-                    bio,
-                    dateofBirth,
-                    website,
-                    profilePic,
-                    type
-                },
-            });
-
-
-            return httpResponse(req, res, 200, responseMessage.SUCCESS, null);
-
-        } catch (error) {
-            console.error("Error in creating profile.", error);
-            httpError(next, error, req, 500);
-        }
-    },
     update: async (req: Request, res: Response, next: NextFunction) => {
         try {
         

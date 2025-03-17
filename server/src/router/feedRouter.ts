@@ -9,6 +9,6 @@ const router = Router();
 
 router.use(authentication);
 
-router.post("/", feedController.feeds);
+router.get("/", feedController.feeds);
 
 export default router;

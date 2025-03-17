@@ -61,8 +61,11 @@ async function getMixedFeed({id, limit, page}: {id: string, limit: number, page:
         take: 10
     })
 
-    await redis.sadd(`seenPosts:${id}`, ...followingPosts.map(post => post.id));
-    await redis.expire(`seenPosts:${id}`, 86400);
+    if(followingPosts.length > 0) {
+        await redis.sadd(`seenPosts:${id}`, ...followingPosts.map(post => post.id));
+        await redis.expire(`seenPosts:${id}`, 86400);
+
+    }
 
     const tredingPosts = await prisma.post.findMany({
         where: {
@@ -120,7 +123,7 @@ export default {
 
         } catch (error) {
             console.error("Error while fetching post feeds.", error);
-            httpError(next, error, req, 500)
+            httpError(next, new Error("Error in fetching feeds."), req, 500)
         }
     }
 }

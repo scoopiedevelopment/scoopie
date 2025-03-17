@@ -37,7 +37,16 @@ export default {
                 }
             }
     
-            
+            const profile = await prisma.profile.findFirst({
+                where: {
+                    userId: user.userId
+                }
+            })
+
+            if(!profile) {
+                return httpError(next, new Error("No associated profile found."), req, 404);
+            }
+
             await prisma.post.create({
                 data: {
                     userId: user.userId,
@@ -59,7 +68,9 @@ export default {
         }
     },
     deletePost: async (req: Request, res: Response, next: NextFunction) => {
-        try {;
+        try {
+            console.log(req.params);
+            
             const { postId } = req.params;
             const user = req.user as User;
 
@@ -95,7 +106,8 @@ export default {
                     id: postId
                 },
                 include: {
-                    media: true
+                    media: true,
+                    user: true
                 }
             })
 

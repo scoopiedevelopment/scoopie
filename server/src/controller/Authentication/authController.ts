@@ -27,12 +27,19 @@ export default {
             
             const hashedPassword = await bcrypt.hash(password, 10);
 
-            await prisma.user.create({
+            const user = await prisma.user.create({
                 data: {
                     email: email,
                     password: hashedPassword
                 }
             })
+            const username = `user${Math.floor(1000 + Math.random() * 9000)}`;
+            await prisma.profile.create({
+                data: {
+                    userId: user.id,
+                    username
+                },
+            });
 
             httpResponse(req, res, 200, responseMessage.SUCCESS)
 
