@@ -56,6 +56,23 @@ services:
     networks:
       - queue-net
 
+  worker: 
+    container_name: worker
+    build:
+      context: ./server
+      dockerfile: docker/development/Dockerfile
+    env_file:
+      - ./.env.development
+    volumes:
+      - ./server/src:/usr/src/app/src
+      - ./server/package.json:/usr/src/app/package.json
+      - ./server/tsconfig.json:/usr/src/app/tsconfig.json
+    depends_on:
+      - server
+    networks:
+      - queue-net
+    command: ["npx", "ts-node", "src/workers/commentWorker.ts"]
+
 networks:
   queue-net:
     driver: bridge

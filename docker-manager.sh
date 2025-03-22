@@ -105,7 +105,7 @@ while true; do
         cleanup $ENV
         start_services $ENV "--build --force-recreate"
         ;;
-    2) start_services $ENV "server" ;;
+    2) start_services $ENV "server worker" ;;
     3) start_services $ENV "client" ;;
     4) start_services $ENV "server client" ;;
     5) continue ;;
