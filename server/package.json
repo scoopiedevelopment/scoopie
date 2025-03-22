@@ -36,6 +36,7 @@
     "@google-cloud/vision": "^4.3.3",
     "@prisma/client": "^6.4.1",
     "bcrypt": "^5.1.1",
+    "bullmq": "^5.43.1",
     "colorette": "^2.0.20",
     "cors": "^2.8.5",
     "countries-and-timezones": "^3.7.2",

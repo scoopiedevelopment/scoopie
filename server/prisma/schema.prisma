@@ -24,6 +24,7 @@ enum Visibility {
 enum MediaType {
   Image
   Video
+  Clip
 }
 
 model User {
@@ -50,6 +51,7 @@ model Profile {
   profilePic      String?
   type            ProfileType @default(Public)
   posts           Post[]
+  clips           Clip[]
   likes           Like[]
   comments        Comment[]
   following       Follow[] @relation("following")
@@ -94,10 +96,25 @@ model Media {
   @@index([postId])
 }
 
+model Clip {
+  id            String @id @map("_id") @default(auto()) @db.ObjectId
+  userId        String @db.ObjectId
+  user          Profile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  visibility    Visibility @default(Public)
+  video         String
+  text          String?
+  likes         Like[]
+  comments      Comment[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
 model Like {
   id          String @id @map("_id") @default(auto()) @db.ObjectId
   postId      String @db.ObjectId
   post        Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  clipId        String? @db.ObjectId
+  clip          Clip? @relation(fields: [clipId], references: [id], onDelete: Cascade)
   likedById   String @db.ObjectId 
   likedBy     Profile @relation(fields: [likedById], references: [userId], onDelete: Cascade)
   createdAt  DateTime @default(now())
@@ -106,10 +123,13 @@ model Like {
 }
 
 model Comment {
-  id        String @id @map("_id") @default(auto()) @db.ObjectId
-  postId      String @db.ObjectId
-  post        Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  id            String @id @map("_id") @default(auto()) @db.ObjectId
+  postId        String? @db.ObjectId
+  post          Post? @relation(fields: [postId], references: [id], onDelete: Cascade)
+  clipId        String? @db.ObjectId
+  clip          Clip? @relation(fields: [clipId], references: [id], onDelete: Cascade)
+  comment       String
   commentById   String @db.ObjectId 
   commentBy     Profile @relation(fields: [commentById], references: [userId], onDelete: Cascade)
-  createdAt  DateTime @default(now())
+  createdAt     DateTime @default(now())
 }

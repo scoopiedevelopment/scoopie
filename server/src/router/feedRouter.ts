@@ -9,6 +9,7 @@ const router = Router();
 
 router.use(authentication);
 
-router.get("/", feedController.feeds);
+router.get("/postFeeds/:page", feedController.feeds);
+router.get("/clipsFeeds/:page", feedController.clipFeeds);
 
 export default router;

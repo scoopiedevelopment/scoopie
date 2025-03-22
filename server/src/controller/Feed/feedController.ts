@@ -113,8 +113,8 @@ export default {
     feeds: async (req: Request, res: Response, next: NextFunction) => {
         try {
             const user = req.user as User; 
-            const { page } = req.query;
-            const parshedPage = parseInt(page as string || "0")
+            const { page } = req.params;
+            const parshedPage = parseInt(page as string || "1") - 1;
             const limit = 20;
             const feed = await getMixedFeed({id: user.userId, limit, page: parshedPage})
             
@@ -124,6 +124,49 @@ export default {
         } catch (error) {
             console.error("Error while fetching post feeds.", error);
             httpError(next, new Error("Error in fetching feeds."), req, 500)
+        }
+    },
+    clipFeeds: async (req: Request, res: Response, next: NextFunction) => {
+
+        try {
+
+            const { page } = req.params;
+            const limit = 20;
+            const skip = parseInt( page as string || "1") - 1;
+
+            const tredingClips = await prisma.clip.findMany({
+                where: {
+                    visibility: 'Public'
+                },
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            username: true,
+                            profilePic: true
+                        }
+                    },
+                    _count: {
+                        select: {
+                            likes: true,
+                            comments: true
+                        }
+                    }
+                },
+                take: limit,
+                skip: skip * limit,
+                orderBy: [
+                    { likes: { _count: 'desc'}},
+                    { comments: { _count: 'desc'}},
+                    { createdAt: 'desc'}
+                ]
+            });
+
+            httpResponse(req, res, 200, responseMessage.SUCCESS, tredingClips);
+
+        } catch (error) {
+            console.error("Error in fetching clips feed.", error);
+            httpError(next, error, req, 500);
         }
     }
 }

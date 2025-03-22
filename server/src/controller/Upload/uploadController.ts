@@ -46,5 +46,21 @@ export default {
             console.error("Error in uploading file.", error);
             httpError(next, error, req, 500);
         }
+    },
+    uploadClip: async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            if(!req.file) {
+                return httpError(next, new Error("Only one file is allowed."), req, 500);
+            }
+
+            const uploadedFiles = await uploadToImageKit(req.file);
+            const responseBody = {
+                url: uploadedFiles.url
+            }
+            httpResponse(req, res, 200, responseMessage.SUCCESS, responseBody);
+        } catch (error) {
+            console.error("Error in uploading clip.", error);
+            httpError(next, error, req, 500);
+        }
     }
 }
