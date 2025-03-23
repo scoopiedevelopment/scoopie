@@ -10,7 +10,7 @@ services:
     networks:
       - queue-net
     env_file: 
-      - ./.env.development
+      - ./.env.production
     command: mongod --replSet rs0 --bind_ip_all --keyFile /data/db/mongo-keyfile
     restart: always
 
@@ -38,7 +38,7 @@ services:
       - '8080:5000'
       - '8888:5555'
     env_file: 
-      - ./.env.development
+      - ./.env.production
     volumes:
       - ./server/src:/usr/src/app/src
       - ./server/package.json:/usr/src/app/package.json
@@ -57,7 +57,7 @@ services:
       context: ./server
       dockerfile: docker/development/Dockerfile
     env_file:
-      - ./.env.development
+      - ./.env.production
     volumes:
       - ./server/src:/usr/src/app/src
       - ./server/package.json:/usr/src/app/package.json
