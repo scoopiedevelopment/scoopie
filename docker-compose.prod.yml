@@ -54,8 +54,8 @@ services:
       - ./nginx:/usr/src/app
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
       
-      # - /etc/letsencrypt/live/test.localhost/fullchain.pem:/etc/letsencrypt/live/test.localhost/fullchain.pem:ro
-      # - /etc/letsencrypt/live/test.localhost/privkey.pem:/etc/letsencrypt/live/test.localhost/privkey.pem:ro
+      - /etc/letsencrypt/live/scoopie.manishdashsharma.site/fullchain.pem:/etc/letsencrypt/live/test.localhost/fullchain.pem:ro
+      - /etc/letsencrypt/live/scoopie.manishdashsharma.site/privkey.pem:/etc/letsencrypt/live/test.localhost/privkey.pem:ro
 
       - ./nginx/certificates:/etc/nginx/certificates:rw 
     restart: always
