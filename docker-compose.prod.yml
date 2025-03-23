@@ -35,8 +35,8 @@ services:
       context: ./server
       dockerfile: docker/development/Dockerfile
     ports:
-      - '8080:5000'
-      - '8888:5555'
+      - '5000:5000'
+      - '5555:5555'
     env_file: 
       - ./.env.production
     volumes:
