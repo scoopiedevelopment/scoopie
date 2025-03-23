@@ -32,15 +32,40 @@ services:
     container_name: server
     build:
       context: ./server
-      dockerfile: docker/production/Dockerfile
+      dockerfile: docker/development/Dockerfile
     ports:
-      - '5000:5000'
+      - '8080:5000'
+      - '8888:5555'
     env_file: 
-      - ./.env.production
-    # depends_on:
-    #   - mongo
+      - ./.env.development
+    volumes:
+      - ./server/src:/usr/src/app/src
+      - ./server/package.json:/usr/src/app/package.json
+      - ./server/tsconfig.json:/usr/src/app/tsconfig.json
+      - ./server/nodemon.json:/usr/src/app/nodemon.json
+      - ./tsconfig.json:/usr/tsconfig.json
+      - ./vision-key.json:/usr/src/app/vision-key.json
+    depends_on:
+      - mongo
     networks:
       - queue-net
+
+  worker: 
+    container_name: worker
+    build:
+      context: ./server
+      dockerfile: docker/development/Dockerfile
+    env_file:
+      - ./.env.development
+    volumes:
+      - ./server/src:/usr/src/app/src
+      - ./server/package.json:/usr/src/app/package.json
+      - ./server/tsconfig.json:/usr/src/app/tsconfig.json
+    depends_on:
+      - server
+    networks:
+      - queue-net
+    command: ["npx", "ts-node", "src/workers/commentWorker.ts"]
   
   nginx:
     build:
