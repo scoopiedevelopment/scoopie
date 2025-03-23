@@ -31,7 +31,7 @@ async function getMixedFeed({id, limit, page}: {id: string, limit: number, page:
         }
     });
 
-    const followingIds = userFollowing?.following.map( following => following.followingId) || [];
+    const followingIds = userFollowing?.following.map( (following: {followingId: string}) => following.followingId) || [];
 
     const followingPosts = await prisma.post.findMany({
         where: {
@@ -62,7 +62,7 @@ async function getMixedFeed({id, limit, page}: {id: string, limit: number, page:
     })
 
     if(followingPosts.length > 0) {
-        await redis.sadd(`seenPosts:${id}`, ...followingPosts.map(post => post.id));
+        await redis.sadd(`seenPosts:${id}`, ...followingPosts.map((post: {id: string}) => post.id));
         await redis.expire(`seenPosts:${id}`, 86400);
 
     }

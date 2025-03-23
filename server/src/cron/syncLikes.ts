@@ -20,7 +20,7 @@ async function syncLikesToDB() {
             });
             
                 
-            const existingUserIds = new Set(existingLikes.map(like => like.likedById));
+            const existingUserIds = new Set(existingLikes.map((like: {likedById: string}) => like.likedById));
     
             const likesToDelete = userIds.filter(userId => existingUserIds.has(userId));
             
