@@ -6,12 +6,12 @@ services:
     image: 'mongo'
     volumes:
       - mongo-data:/data/db
-      - ./mongo-keyfile:/data/db/mongo-keyfile
+      - ./mongo-keyfile:/etc/mongo-keyfile
     networks:
       - queue-net
     env_file: 
       - ./.env.production
-    command: mongod --replSet rs0 --bind_ip_all --keyFile /data/db/mongo-keyfile
+    command: mongod --replSet rs0 --bind_ip_all --keyFile /etc/mongo-keyfile
     restart: always
 
   client:
