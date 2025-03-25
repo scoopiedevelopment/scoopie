@@ -31,7 +31,8 @@ export default {
     getComments: async (req: Request, res: Response, next: NextFunction) => {
         try {
 
-            const { postId } = req.params;
+            const { postId, page } = req.params;
+            const parshedPage = parseInt(page || "1") - 1;
             const comments = await prisma.post.findFirst({
                 where: {
                     id: postId
@@ -48,6 +49,11 @@ export default {
                                     userId: true
                                 }
                             }
+                        },
+                        skip: parshedPage * 20,
+                        take: 20,
+                        orderBy: {
+                            createdAt: 'desc'
                         }
                     }
                 }

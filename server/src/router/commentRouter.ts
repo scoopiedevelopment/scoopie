@@ -12,7 +12,7 @@ const router = Router();
 router.use(authentication);
 
 router.post("/create", validateRequest(createCommentSchema), commentController.comment);
-router.get("/get-post-comments/:postId", commentController.getComments);
+router.get("/get-post-comments/:postId/:page", commentController.getComments);
 router.delete("/delete/:commentId", commentController.deleteComment)
 
 export default router;

@@ -120,8 +120,9 @@ export default {
     },
     getUserPosts: async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { userId } = req.params;
-            
+            const { userId, page } = req.params;
+            let parshedPage = parseInt(page || "1") - 1;
+
             if(!userId) {
                 return httpError(next, new Error("No post Id is provided."), req, 400)
             }
@@ -131,7 +132,13 @@ export default {
                     userId: userId
                 },
                 select: {
-                    posts: true
+                    posts: {
+                        skip: parshedPage * 20,
+                        take: 20,
+                        orderBy: {
+                            createdAt: 'desc'
+                        }
+                    }
                 }
             })
 
