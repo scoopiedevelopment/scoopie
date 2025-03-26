@@ -119,7 +119,6 @@ passport.use(
         async (email, password, done) => {
 
             try {
-                console.log(email, password);
                 
                 const user = await prisma.user.findFirst({
                     where: {
@@ -129,7 +128,7 @@ passport.use(
                 
                 if(!user || !user.password) {
                     return done(null, false, {
-                        message: "Invalid Credentials"
+                        message: "No user found."
                     });
                 }
     

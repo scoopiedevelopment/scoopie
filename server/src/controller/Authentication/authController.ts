@@ -52,7 +52,6 @@ export default {
     login: async(req: LoginRequest, res: Response, next: NextFunction) => {
 
         try {
-            console.log(req.user);
             
             if(!req.user?.userId) {
                 throw new Error("User not found.")
