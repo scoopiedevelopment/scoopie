@@ -22,16 +22,17 @@ export default async (req: Request, _res: Response, next: NextFunction) => {
 
         const { userId } = quicker.verifyToken(accessToken, config.ACCESS_TOKEN.SECRET as string) as DecryptedJwt
 
+        if(!userId) {
+            return httpError(next, new Error(responseMessage.UNAUTHORIZED), req, 401)
+
+        }
         const user = {
             userId
         }
         
-        if (user) {
-            req.user = user
-            return next()
-        }
+        req.user = user
+        return next()
 
-        httpError(next, new Error(responseMessage.UNAUTHORIZED), req, 401)
     } catch (err) {
         httpError(next, err, req, 500)
     }
