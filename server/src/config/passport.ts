@@ -26,7 +26,6 @@ passport.use(
         async (_accessToken, _refreshToken, profile, done) => {
 
             try {
-                console.log("hitting");
                 
                 let user = await prisma.user.findFirst({
                     where: {

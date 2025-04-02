@@ -20,7 +20,6 @@ export default {
             let hasLiked: boolean = !!(await redis.sismember(userLikeKey, user!.userId));
 
             if (!hasLiked) {
-                console.log("add");
                 
                 const existingLike = await prisma.like.findFirst({
                     where: { postId, likedById: user!.userId },
@@ -34,7 +33,6 @@ export default {
             }
     
             if (hasLiked) {
-                console.log("yaha");
                 
                 await redis.decr(likeKey);
                 await redis.srem(userLikeKey, user!.userId);

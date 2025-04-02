@@ -4,6 +4,7 @@ import httpError from "../../util/httpError";
 import httpResponse from "../../util/httpResponse";
 import responseMessage from "../../constant/responseMessage";
 import { User } from "../Authentication/types";
+import { followQueue, redis } from "../../util/redis";
 
 
 export default {
@@ -72,7 +73,16 @@ export default {
                 },
                 select: {
                     email: true,
-                    profile: true
+                    profile: {
+                        include: {
+                            _count: {
+                                select: {
+                                    followers: true,
+                                    following: true
+                                }
+                            }
+                        }
+                    },
                 }
             })
 
@@ -82,4 +92,51 @@ export default {
             httpError(next, error, req, 500)
         }
     },
+    toggleFollow: async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { followingId , followerId, action } = req.body;
+
+            const isFollowing = await redis.sismember(`user:${followerId}:following`, followingId);
+
+            if(isFollowing) {
+                await redis.srem(`user:${followingId}:followers`, followerId);
+                await redis.srem(`user:${followerId}:following`, followingId);
+
+                await followQueue.add("followUpdate", {
+                    followingId,
+                    followerId,
+                    action
+                });
+
+                return httpResponse(req, res, 200, responseMessage.UNFOLLOWED, null);
+            } 
+            else if(!isFollowing && action === "Unfollow") {
+
+                await followQueue.add("followUpdate", {
+                    followingId,
+                    followerId,
+                    action
+                });
+
+                return httpResponse(req, res, 200, responseMessage.UNFOLLOWED, null);
+            }
+            else if(action === "Follow") {
+                await redis.sadd(`user:${followingId}:followers`, followerId);
+                await redis.sadd(`user:${followerId}:following`, followingId);
+
+                await followQueue.add('followUpdate', {
+                    followingId,
+                    followerId,
+                    action
+                });
+                return httpResponse(req, res, 200, responseMessage.FOLLOWED, null);
+            }
+
+
+        } catch (error) {
+            console.error("Error while folowing user.", error);
+            return httpError(next, error, req, 500);
+        }
+    }
+    
 }

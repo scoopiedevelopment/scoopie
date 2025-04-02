@@ -46,4 +46,4 @@ async function processBatch() {
   }
 }
 
-console.log("Worker started, waiting for jobs...");
+console.log("Comment Worker started, waiting for jobs...");
