@@ -49,6 +49,7 @@ model Profile {
   dateofBirth     DateTime?
   website         String?
   profilePic      String?
+  address         String?
   type            ProfileType @default(Public)
   posts           Post[]
   clips           Clip[]
