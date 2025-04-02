@@ -1,5 +1,6 @@
 import { createServer } from "http";
 import { Server } from "socket.io";
+import { redis } from "./utils/redis";
 
 const server = createServer();
 const io = new Server(server, { cors: { origin: "*" } });
@@ -14,10 +15,11 @@ io.on("connection", (socket) => {
 
   socket.on("joinRoom", ({ chatId }) => {
     socket.join(chatId);
+    redis.set(chatId, "")
   });
 
-  socket.on("sendMessage", ({ chatId, senderId, message }) => {
-    io.to(chatId).emit("receiveMessage", { chatId, senderId, message });
+  socket.on("sendMessage", ({ chatId, senderId, chatId, message }) => {
+    
   });
 
   socket.on("disconnect", () => {
