@@ -84,7 +84,7 @@ async function getMixedFeed({id, limit, page}: {id: string, limit: number, page:
             },
             user: {
                 select: {
-                    id: true,
+                    userId: true,
                     username: true,
                     profilePic: true
                 }
@@ -151,7 +151,7 @@ export default {
                 include: {
                     user: {
                         select: {
-                            id: true,
+                            userId: true,
                             username: true,
                             profilePic: true
                         }

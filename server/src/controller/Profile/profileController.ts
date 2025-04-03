@@ -5,6 +5,7 @@ import httpResponse from "../../util/httpResponse";
 import responseMessage from "../../constant/responseMessage";
 import { User } from "../Authentication/types";
 import { followQueue, redis } from "../../util/redis";
+import { isValidObjectId } from "mongoose";
 
 
 export default {
@@ -90,6 +91,45 @@ export default {
 
         } catch (error) {
             httpError(next, error, req, 500)
+        }
+    },
+    getUserProfile: async (req: Request, res:Response, next:NextFunction) => {
+        try {
+            
+            const { userId } = req.params;
+
+            if(!userId) {
+                return httpError(next, new Error("No user Id is provided."), req, 400)
+            }
+
+            if(!isValidObjectId(userId)) {
+                return httpError(next, new Error("Invalid userId."), req, 400);
+            }
+
+            const profile = await prisma.profile.findFirst({
+                where: {
+                    userId
+                },
+                include: {
+                    _count: {
+                        select: {
+                            followers: true,
+                            following: true
+                        }
+                    }
+                }
+
+            });
+
+            if(!profile) {
+                return httpError(next, new Error("Profile not found."), req, 404);
+            }
+
+            return httpResponse(req, res, 200, responseMessage.SUCCESS, profile);
+
+        } catch (error) {
+            console.error("Error in fetching user profile.", error);
+            return httpError(next, error, req, 500);
         }
     },
     toggleFollow: async (req: Request, res: Response, next: NextFunction) => {
