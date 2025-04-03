@@ -6,6 +6,7 @@ import responseMessage from "../../constant/responseMessage";
 import { checkImageForNSFW } from "../../config/sightEngine";
 import { prisma } from "../../util/prisma";
 import { User } from "../Authentication/types";
+import { isValidObjectId } from "mongoose";
 
 
 
@@ -124,7 +125,11 @@ export default {
             let parshedPage = parseInt(page || "1") - 1;
 
             if(!userId) {
-                return httpError(next, new Error("No post Id is provided."), req, 400)
+                return httpError(next, new Error("No user Id is provided."), req, 400)
+            }
+
+            if(!isValidObjectId(userId)) {
+                return httpError(next, new Error("Invalid userId."), req, 400);
             }
 
             const post = await prisma.profile.findUnique({
@@ -140,7 +145,11 @@ export default {
                         }
                     }
                 }
-            })
+            });
+
+            if(!post) {
+                return httpError(next, new Error("User post not found. Please check userId."), req, 404);
+            }
 
             httpResponse(req, res, 201, responseMessage.SUCCESS, post);
 

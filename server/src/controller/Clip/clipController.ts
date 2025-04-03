@@ -5,6 +5,7 @@ import { prisma } from "../../util/prisma";
 import { User } from "../Authentication/types";
 import httpResponse from "../../util/httpResponse";
 import responseMessage from "../../constant/responseMessage";
+import { isValidObjectId } from "mongoose";
 
 
 
@@ -64,10 +65,26 @@ export default {
     getUserClips: async (req: Request, res: Response, next: NextFunction) => {
 
         try {
-            const user = req.user as User;
+
+            const { userId, page } = req.params;
+            let parshedPage = parseInt(page || "1") - 1;
+
+            if(!userId) {
+                return httpError(next, new Error("No user Id is provided."), req, 400)
+            }
+
+            if(!isValidObjectId(userId)) {
+                return httpError(next, new Error("Invalid userId."), req, 400);
+            }
+
             const clips = await prisma.clip.findMany({
                 where: {
-                    userId: user.userId
+                    userId: userId
+                },
+                skip: parshedPage * 20,
+                take: 20,
+                orderBy: {
+                    createdAt: 'desc'
                 }
             })
 
