@@ -42,6 +42,11 @@ async function getMixedFeed({id, limit, page}: {id: string, limit: number, page:
             id: { notIn: seenPostIds}
         },
         include: {
+            media: {
+              select: {
+                url: true
+              }  
+            },
             user: {
                 select: {
                     id: true,
@@ -72,6 +77,11 @@ async function getMixedFeed({id, limit, page}: {id: string, limit: number, page:
             visibility: 'Public'
         },
         include: {
+            media: {
+                select: {
+                  url: true
+                }  
+            },
             user: {
                 select: {
                     id: true,
