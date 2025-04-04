@@ -43,7 +43,7 @@ export default {
             await redis.sadd(userLikeKey, user!.userId);
 
 
-            return httpResponse(req, res, 200, responseMessage.SUCCESS, null);
+            return httpResponse(req, res, 201, responseMessage.SUCCESS, null);
 
         } catch (error) {
             console.error("Error in liking/disliking post.", error);

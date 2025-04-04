@@ -23,7 +23,7 @@ export default {
             await redis.hset(`pendingComments:${postId}`, user.userId, JSON.stringify(commentData));
             await commentQueue.add("newComment", commentData);
 
-            return httpResponse(req, res, 200, "Commented Successfully.", null);
+            return httpResponse(req, res, 201, "Commented Successfully.", null);
 
         } catch (error) {
 

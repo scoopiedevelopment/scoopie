@@ -6,6 +6,7 @@ import responseMessage from "../../constant/responseMessage";
 import { User } from "../Authentication/types";
 import { followQueue, redis } from "../../util/redis";
 import { isValidObjectId } from "mongoose";
+import { Prisma } from "@prisma/client";
 
 
 export default {
@@ -22,7 +23,7 @@ export default {
                 type
             } = req.body;
 
-            const user = req.user as User;
+            // const user = req.user as User;
 
             const updateData: Record<string, any> = {};
             if (username !== undefined) updateData.username = username;
@@ -35,7 +36,7 @@ export default {
 
 
             await prisma.profile.update({
-                where: { userId: user.userId },
+                where: { userId: "434" },
                 data: updateData,
             });
 
@@ -43,6 +44,11 @@ export default {
 
         } catch (error) {
             console.error("Error in updating profile.", error);
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                if (error.code === "P2002") {
+                    return httpError(next, new Error("Username is already taken. Please choose another one."), req, 409);
+                }
+            }
             httpError(next, error, req, 500);
         }
     },
@@ -130,6 +136,31 @@ export default {
         } catch (error) {
             console.error("Error in fetching user profile.", error);
             return httpError(next, error, req, 500);
+        }
+    },
+    checkUsername: async (req: Request, res: Response, next: NextFunction) => {
+        
+        try {
+            const { username } = req.params;
+
+            if (!username || typeof username !== "string") {
+                return res.status(400).json({ error: "Username is required and must be a string." });
+            };
+
+            const existingUser = await prisma.profile.findUnique({
+                where: { username: username.toLowerCase() }, 
+                select: { id: true },
+            });
+
+            if(existingUser) {
+                return httpError(next, new Error("Username already taken."), req, 409);
+            };
+
+            return httpResponse(req, res, 200, "Username is available.", null);
+
+        } catch (error) {
+            console.error("Error checking username:", error);
+            httpError(next, error, req, 500);
         }
     },
     toggleFollow: async (req: Request, res: Response, next: NextFunction) => {
