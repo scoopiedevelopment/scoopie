@@ -10,7 +10,7 @@ RUN npm install
 COPY src/ src/
 COPY logs/ logs/
 COPY tsconfig.json tsconfig.json
-
+RUN npx prisma generate
 RUN npm run dist
 
 
