@@ -74,7 +74,7 @@ services:
       context: ./server
       dockerfile: docker/development/Dockerfile
     env_file:
-      - ./.env.development
+      - ./.env.production
     volumes:
       - ./server/src:/usr/src/app/src
       - ./server/package.json:/usr/src/app/package.json
