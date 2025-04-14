@@ -81,8 +81,6 @@ export default {
                     select: {
                         comments: {
                             select: {
-                                id: true,
-                                comment: true,
                                 commentBy: {
                                     select: {
                                         username: true,
@@ -121,6 +119,11 @@ export default {
                                         username: true,
                                         profilePic: true,
                                         userId: true
+                                    }
+                                },
+                                _count: {
+                                    select: {
+                                        likedBy: true
                                     }
                                 }
                             },
