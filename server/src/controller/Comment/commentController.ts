@@ -80,7 +80,7 @@ export default {
                     },
                     select: {
                         comments: {
-                            select: {
+                            include: {
                                 commentBy: {
                                     select: {
                                         username: true,
@@ -111,9 +111,9 @@ export default {
                     },
                     select: {
                         comments: {
-                            select: {
-                                id: true,
-                                comment: true,
+                            include: {
+                                // id: true,
+                                // comment: true,
                                 commentBy: {
                                     select: {
                                         username: true,
