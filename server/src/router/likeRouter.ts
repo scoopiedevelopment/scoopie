@@ -9,6 +9,6 @@ const router = Router();
 
 router.use(authentication);
 
-router.post("/", likeController.toggleLike);
+router.post("/toggle", likeController.toggleLike);
 
 export default router;

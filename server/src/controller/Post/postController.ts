@@ -96,7 +96,6 @@ export default {
     getPostById: async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { postId } = req.params;
-            console.log(req.params);
             
             if(!postId) {
                 return httpError(next, new Error("No post Id is provided."), req, 400)

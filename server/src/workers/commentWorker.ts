@@ -28,12 +28,16 @@ new Worker(
 );
 
 async function processBatch() {
+
   if (commentBatch.length === 0) return;
 
   console.log(`Processing batch of ${commentBatch.length} comments...`);
 
   try {
     await prisma.comment.createMany({ data: commentBatch });
+    commentBatch.forEach(async (comment) => {
+      await redis.del(`pendingComments:${comment.postId || comment.clipId || comment.commentId}`);
+    })
     console.log("Batch inserted successfully!");
   } catch (error) {
     console.error("Error inserting batch:", error);

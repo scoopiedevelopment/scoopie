@@ -11,5 +11,6 @@ router.use(authentication);
 
 router.get("/postFeeds/:page", feedController.feeds);
 router.get("/clipsFeeds/:page", feedController.clipFeeds);
+router.get("/addedFeeds/:page", feedController.addedFeeds);
 
 export default router;

@@ -72,6 +72,23 @@ services:
     networks:
       - queue-net
     command: ["npx", "ts-node", "src/workers/commentWorker.ts"]
+  
+  likeworker: 
+    container_name: likeworker
+    build:
+      context: ./server
+      dockerfile: docker/development/Dockerfile
+    env_file:
+      - ./.env.development
+    volumes:
+      - ./server/src:/usr/src/app/src
+      - ./server/package.json:/usr/src/app/package.json
+      - ./server/tsconfig.json:/usr/src/app/tsconfig.json
+    depends_on:
+      - server
+    networks:
+      - queue-net
+    command: ["npx", "ts-node", "src/workers/likeWorker.ts"]
 
 networks:
   queue-net:

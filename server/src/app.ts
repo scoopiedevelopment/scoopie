@@ -1,7 +1,6 @@
 import express, { Application, NextFunction, Request, Response } from 'express'
 import router from './router/apiRouter'
 import './config/passport'
-import './cron/syncLikes'
 import globalErrorHandler from './middleware/globalErrorHandler'
 import responseMessage from './constant/responseMessage'
 import httpError from './util/httpError'

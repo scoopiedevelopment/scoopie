@@ -10,17 +10,19 @@ import { prisma } from "../../util/prisma";
 export default {
     comment: async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { postId , comment } = req.body;
+            const { postId, clipId, commentId, comment } = req.body;
             const user = req.user as User;
 
             const commentData = {
-                postId,
+                postId: !postId ? null : postId,
+                clipId: !clipId ? null : clipId,
+                // commentId: !commentId ? null : commentId,
                 comment,
                 commentById: user.userId,
                 createdAt: new Date().toISOString(),
             };
 
-            await redis.hset(`pendingComments:${postId}`, user.userId, JSON.stringify(commentData));
+            await redis.rpush(`pendingComments:${postId || clipId || commentId}`, JSON.stringify(commentData));
             await commentQueue.add("newComment", commentData);
 
             return httpResponse(req, res, 201, "Commented Successfully.", null);
@@ -34,11 +36,13 @@ export default {
     getComments: async (req: Request, res: Response, next: NextFunction) => {
         try {
 
-            const { postId, page } = req.params;
+            const { type, id, page } = req.params;
             const parshedPage = parseInt(page || "1") - 1;
 
 
-            const pendingCommentsRaw = await redis.hgetall(`pendingComments:${postId}`);
+            const pendingCommentsRaw = await redis.lrange(`pendingComments:${id}`, 0, -1);
+            console.log(pendingCommentsRaw);
+            
             const pendingComments = Object.values(pendingCommentsRaw).map(comment => JSON.parse(comment));
 
             const userIds = pendingComments.map(c => c.commentById);
@@ -60,41 +64,82 @@ export default {
                 id: null,
                 comment: comment.comment,
                 commentBy: userDetailsMap[comment.commentById] || { username: "Unknown", profilePic: null, userId: comment.commentById },
-                createdAt: comment.createdAt
+                createdAt: comment.createdAt,
+                _count: {
+                    likedBy: 0
+                }
             }));
 
+            let storedComments = null;
 
-            const storedComments = await prisma.post.findFirst({
-                where: {
-                    id: postId
-                },
-                select: {
-                    comments: {
-                        select: {
-                            id: true,
-                            comment: true,
-                            commentBy: {
-                                select: {
-                                    username: true,
-                                    profilePic: true,
-                                    userId: true
+            if(type === "post") {
+
+                storedComments = await prisma.post.findFirst({
+                    where: {
+                        id: id
+                    },
+                    select: {
+                        comments: {
+                            select: {
+                                id: true,
+                                comment: true,
+                                commentBy: {
+                                    select: {
+                                        username: true,
+                                        profilePic: true,
+                                        userId: true
+                                    }
+                                },
+                                _count: {
+                                    select: {
+                                        likedBy: true
+                                    }
                                 }
+                            },
+                            skip: parshedPage * 20,
+                            take: 20,
+                            orderBy: {
+                                createdAt: 'desc'
                             }
-                        },
-                        skip: parshedPage * 20,
-                        take: 20,
-                        orderBy: {
-                            createdAt: 'desc'
                         }
                     }
-                }
-            });
+                });
+
+            } else if(type === "clip") {
+                
+                storedComments = await prisma.clip.findFirst({
+                    where: {
+                        id: id
+                    },
+                    select: {
+                        comments: {
+                            select: {
+                                id: true,
+                                comment: true,
+                                commentBy: {
+                                    select: {
+                                        username: true,
+                                        profilePic: true,
+                                        userId: true
+                                    }
+                                }
+                            },
+                            skip: parshedPage * 20,
+                            take: 20,
+                            orderBy: {
+                                createdAt: 'desc'
+                            }
+                        }
+                    }
+                });
+            }
 
             const allComments = [...enrichedPendingComments, ...(storedComments?.comments || [])];
 
             return httpResponse(req, res, 200, responseMessage.SUCCESS, allComments);
 
         } catch (error) {
+            console.error("Error in fetching comments.", error);
             return httpError(next, new Error(responseMessage.SOMETHING_WENT_WRONG), req, 500)
         }
     },

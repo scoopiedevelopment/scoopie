@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { redis } from "../../util/redis";
+import { likeQueue, redis } from "../../util/redis";
 import httpResponse from "../../util/httpResponse";
 import responseMessage from "../../constant/responseMessage";
 import httpError from "../../util/httpError";
@@ -12,22 +12,26 @@ export default {
     toggleLike: async (req: Request, res: Response, next: NextFunction) => {
 
         try {
-            const { postId } = req.body;
+            const { postId, clipId, commentId } = req.body;
+
             const user = req.user as User;
-            const likeKey = `like_count:${postId}`;
-            const userLikeKey = `user_liked:${postId}`;
+            const likeKey = `like_count:${postId || clipId || commentId}`;
+            const userLikeKey = `user_liked:${postId || clipId || commentId}`;
 
             let hasLiked: boolean = !!(await redis.sismember(userLikeKey, user!.userId));
 
             if (!hasLiked) {
                 
                 const existingLike = await prisma.like.findFirst({
-                    where: { postId, likedById: user!.userId },
+                    where: {
+                        ...(postId && { postId }),
+                        ...(clipId && { clipId }),
+                        ...(commentId && { commentId }),
+                        likedById: user!.userId 
+                    },
                 });
     
                 if (existingLike) {
-                    await redis.sadd(userLikeKey, user!.userId);
-                    await redis.incr(likeKey);
                     hasLiked = true;
                 }
             }
@@ -36,14 +40,30 @@ export default {
                 
                 await redis.decr(likeKey);
                 await redis.srem(userLikeKey, user!.userId);
+                await likeQueue.add('toggleLike', {
+                    postId: postId || null,
+                    clipId: clipId || null,
+                    commentId: commentId || null,
+                    type: 'unlike',
+                    likedById: user.userId,
+                    createdAt: new Date().toISOString()
+                });
                 return httpResponse(req, res, 200, responseMessage.UNLIKED, null);
             }
     
             await redis.incr(likeKey);
             await redis.sadd(userLikeKey, user!.userId);
+            await likeQueue.add('toggleLike', {
+                postId: postId || null,
+                clipId: clipId || null,
+                commentId: commentId || null,
+                type: 'like',
+                likedById: user.userId,
+                createdAt: new Date().toISOString()
+            });
 
 
-            return httpResponse(req, res, 201, responseMessage.SUCCESS, null);
+            return httpResponse(req, res, 201, responseMessage.LIKED, null);
 
         } catch (error) {
             console.error("Error in liking/disliking post.", error);

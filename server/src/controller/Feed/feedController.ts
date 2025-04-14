@@ -64,7 +64,7 @@ async function getMixedFeed({id, limit, page}: {id: string, limit: number, page:
         orderBy: { createdAt: 'desc'},
         skip: page * 10,
         take: 10
-    })
+    });
 
     if(followingPosts.length > 0) {
         await redis.sadd(`seenPosts:${id}`, ...followingPosts.map((post: {id: string}) => post.id));
@@ -176,6 +176,66 @@ export default {
 
         } catch (error) {
             console.error("Error in fetching clips feed.", error);
+            httpError(next, error, req, 500);
+        }
+    },
+    addedFeeds: async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { page } = req.params;
+            const limit = 20;
+            const skip = parseInt( page as string || "1") - 1;
+            const user = req.user as User; 
+
+            const userFollowing = await prisma.profile.findUnique({
+                where: {
+                    userId: user.userId
+                },
+                select: {
+                    following: {
+                        select: {
+                            followingId: true
+                        }
+                    }
+                }
+            });
+        
+            const followingIds = userFollowing?.following.map( (following: {followingId: string}) => following.followingId) || [];
+        
+            const followingPosts = await prisma.post.findMany({
+                where: {
+                    userId: {
+                        in: followingIds
+                    },
+                },
+                include: {
+                    media: {
+                      select: {
+                        url: true
+                      }  
+                    },
+                    user: {
+                        select: {
+                            id: true,
+                            username: true,
+                            profilePic: true
+                        }
+                    },
+                    _count: {
+                        select: {
+                            likes: true,
+                            comments: true
+                        }
+                    }
+                },
+                orderBy: { createdAt: 'desc'},
+                skip: skip * limit,
+                take: 10
+            })
+
+            httpResponse(req, res, 200, responseMessage.SUCCESS, followingPosts);
+
+        } catch (error) {
+            console.error("Error in fetching added feeds.", error);
             httpError(next, error, req, 500);
         }
     }
