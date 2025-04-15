@@ -14,20 +14,20 @@ services:
     command: mongod --replSet rs0 --bind_ip_all --keyFile /etc/mongo-keyfile
     restart: always
 
-  client:
-    container_name: client
-    build:
-      context: ./client
-      dockerfile: docker/production/Dockerfile
-    ports:
-      - '5173:80'
-    restart: always
-    env_file: 
-      - ./.env.production
-    depends_on:
-      - server
-    networks:
-      - queue-net
+  # client:
+  #   container_name: client
+  #   build:
+  #     context: ./client
+  #     dockerfile: docker/production/Dockerfile
+  #   ports:
+  #     - '5173:80'
+  #   restart: always
+  #   env_file: 
+  #     - ./.env.production
+  #   depends_on:
+  #     - server
+  #   networks:
+  #     - queue-net
 
   server:
     container_name: server
@@ -58,15 +58,12 @@ services:
       dockerfile: docker/development/Dockerfile
     env_file:
       - ./.env.production
-    volumes:
-      - ./server/src:/usr/src/app/src
-      - ./server/package.json:/usr/src/app/package.json
-      - ./server/tsconfig.json:/usr/src/app/tsconfig.json
     depends_on:
       - server
     networks:
       - queue-net
-    command: ["npx", "ts-node", "src/workers/commentWorker.ts"]
+    command: ["sh", "-c", "npx prisma generate && npx ts-node src/workers/likeWorker.ts"]
+
 
   likeworker: 
     container_name: likeworker
@@ -75,15 +72,12 @@ services:
       dockerfile: docker/development/Dockerfile
     env_file:
       - ./.env.production
-    volumes:
-      - ./server/src:/usr/src/app/src
-      - ./server/package.json:/usr/src/app/package.json
-      - ./server/tsconfig.json:/usr/src/app/tsconfig.json
     depends_on:
       - server
     networks:
       - queue-net
-    command: ["npx", "ts-node", "src/workers/likeWorker.ts"]
+    command: ["sh", "-c", "npx prisma generate && npx ts-node src/workers/likeWorker.ts"]
+
   
   nginx:
     build:
