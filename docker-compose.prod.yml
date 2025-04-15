@@ -14,20 +14,20 @@ services:
     command: mongod --replSet rs0 --bind_ip_all --keyFile /etc/mongo-keyfile
     restart: always
 
-  # client:
-  #   container_name: client
-  #   build:
-  #     context: ./client
-  #     dockerfile: docker/production/Dockerfile
-  #   ports:
-  #     - '5173:80'
-  #   restart: always
-  #   env_file: 
-  #     - ./.env.production
-  #   depends_on:
-  #     - server
-  #   networks:
-  #     - queue-net
+  client:
+    container_name: client
+    build:
+      context: ./client
+      dockerfile: docker/production/Dockerfile
+    ports:
+      - '5173:80'
+    restart: always
+    env_file: 
+      - ./.env.production
+    depends_on:
+      - server
+    networks:
+      - queue-net
 
   server:
     container_name: server
