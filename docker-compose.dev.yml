@@ -13,6 +13,19 @@ services:
       - ./.env.development
     command: mongod --replSet rs0 --bind_ip_all --keyFile /data/db/mongo-keyfile
     restart: always
+  
+  cache:
+    container_name: cache_container
+    image: redis:latest
+    restart: always
+    ports:
+      - '6379:6379'
+    command: bash -c "echo 1 > /proc/sys/vm/overcommit_memory && redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD}"
+    volumes:
+      - cache:/data
+    networks:
+      - queue-net
+    privileged: true
 
   # client:
   #   container_name: client
@@ -53,6 +66,7 @@ services:
       - ./vision-key.json:/usr/src/app/vision-key.json
     depends_on:
       - mongo
+      - cache
     networks:
       - queue-net
 
@@ -96,3 +110,4 @@ networks:
 
 volumes:
   mongo-data:
+  cache:
