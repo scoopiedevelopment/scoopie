@@ -16,7 +16,7 @@ export default {
             const commentData = {
                 postId: !postId ? null : postId,
                 clipId: !clipId ? null : clipId,
-                // commentId: !commentId ? null : commentId,
+                parentCommentId: !commentId ? null : commentId,
                 comment,
                 commentById: user.userId,
                 createdAt: new Date().toISOString(),
@@ -41,7 +41,6 @@ export default {
 
 
             const pendingCommentsRaw = await redis.lrange(`pendingComments:${id}`, 0, -1);
-            console.log(pendingCommentsRaw);
             
             const pendingComments = Object.values(pendingCommentsRaw).map(comment => JSON.parse(comment));
 

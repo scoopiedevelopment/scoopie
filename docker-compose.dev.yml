@@ -34,6 +34,19 @@ services:
   #   networks:
   #     - queue-net
 
+  cache:
+    container_name: cache_container
+    image: redis:latest
+    restart: always
+    ports:
+      - '6379:6379'
+    command: bash -c "echo 1 > /proc/sys/vm/overcommit_memory && redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD}"
+    volumes:
+      - cache:/data
+    networks:
+      - queue-net
+    privileged: true
+
   server:
     container_name: server
     build:

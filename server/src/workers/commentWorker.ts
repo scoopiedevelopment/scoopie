@@ -36,7 +36,7 @@ async function processBatch() {
   try {
     await prisma.comment.createMany({ data: commentBatch });
     commentBatch.forEach(async (comment) => {
-      await redis.del(`pendingComments:${comment.postId || comment.clipId || comment.commentId}`);
+      await redis.del(`pendingComments:${comment.postId || comment.clipId || comment.parentCommentId}`);
     })
     console.log("Batch inserted successfully!");
   } catch (error) {

@@ -32,6 +32,11 @@ enum ChatType {
   Group
 }
 
+enum FollowStatus {
+  Pending
+  Accepted
+}
+
 model User {
   id              String  @id @map("_id") @default(auto()) @db.ObjectId
   email           String? 
@@ -88,6 +93,7 @@ model Follow {
   id                String @id @map("_id") @default(auto()) @db.ObjectId
   followingId       String  @db.ObjectId
   following         Profile @relation("following", fields: [followingId], references: [id])
+  status            FollowStatus @default(Pending)
   followerId        String  @db.ObjectId
   follower          Profile @relation("followers", fields: [followerId], references: [id])
   @@unique([followerId, followingId])
@@ -159,6 +165,11 @@ model Comment {
   commentById   String @db.ObjectId 
   commentBy     Profile @relation(fields: [commentById], references: [userId], onDelete: Cascade)
   likedBy       Like[]
+
+  parentCommentId  String?   @db.ObjectId
+  parentComment    Comment?  @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies          Comment[] @relation("CommentReplies")
+
   createdAt     DateTime @default(now())
 }
 

@@ -24,6 +24,9 @@ async function getMixedFeed({id, limit, page}: {id: string, limit: number, page:
         },
         select: {
             following: {
+                where: {
+                    status: 'Accepted'
+                },
                 select: {
                     followingId: true
                 }
@@ -74,7 +77,9 @@ async function getMixedFeed({id, limit, page}: {id: string, limit: number, page:
 
     const tredingPosts = await prisma.post.findMany({
         where: {
-            visibility: 'Public'
+            user: {
+                type: 'Public'
+            }
         },
         include: {
             media: {
@@ -146,14 +151,16 @@ export default {
 
             const tredingClips = await prisma.clip.findMany({
                 where: {
-                    visibility: 'Public'
+                    user: {
+                        type: 'Public'
+                    }
                 },
                 include: {
                     user: {
                         select: {
                             userId: true,
                             username: true,
-                            profilePic: true
+                            profilePic: true,
                         }
                     },
                     _count: {
@@ -192,6 +199,9 @@ export default {
                 },
                 select: {
                     following: {
+                        where: {
+                            status: 'Accepted'
+                        },
                         select: {
                             followingId: true
                         }
