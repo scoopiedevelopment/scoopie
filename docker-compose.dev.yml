@@ -66,6 +66,7 @@ services:
       - ./vision-key.json:/usr/src/app/vision-key.json
     depends_on:
       - mongo
+      - cache
     networks:
       - queue-net
 
@@ -82,6 +83,7 @@ services:
       - ./server/tsconfig.json:/usr/src/app/tsconfig.json
     depends_on:
       - server
+      - cache
     networks:
       - queue-net
     command: ["npx", "ts-node", "src/workers/commentWorker.ts"]
@@ -99,6 +101,7 @@ services:
       - ./server/tsconfig.json:/usr/src/app/tsconfig.json
     depends_on:
       - server
+      - cache
     networks:
       - queue-net
     command: ["npx", "ts-node", "src/workers/likeWorker.ts"]
@@ -109,3 +112,4 @@ networks:
 
 volumes:
   mongo-data:
+  cache:

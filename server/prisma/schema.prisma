@@ -65,9 +65,10 @@ model Profile {
   clips           Clip[]
   likes           Like[]
   comments        Comment[]
-  following       Follow[] @relation("following")
-  followers       Follow[] @relation("followers")
+  following       Follow[] @relation("followers")
+  followers       Follow[] @relation("following")
   saved           Saved[]
+  stories         Story[]
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
@@ -92,10 +93,10 @@ model Saved {
 model Follow {
   id                String @id @map("_id") @default(auto()) @db.ObjectId
   followingId       String  @db.ObjectId
-  following         Profile @relation("following", fields: [followingId], references: [id])
+  following         Profile @relation("following", fields: [followingId], references: [userId])
   status            FollowStatus @default(Pending)
   followerId        String  @db.ObjectId
-  follower          Profile @relation("followers", fields: [followerId], references: [id])
+  follower          Profile @relation("followers", fields: [followerId], references: [userId])
   @@unique([followerId, followingId])
   @@index([followingId])
   @@index([followerId])
@@ -111,6 +112,8 @@ model Post {
   likes       Like[]
   comments    Comment[]
   savedBy     Saved[]
+  views       Int @default(0) 
+  shares      Int @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   @@index([userId])
@@ -137,6 +140,8 @@ model Clip {
   likes         Like[]
   comments      Comment[]
   savedBy       Saved[]
+  views         Int @default(0)
+  shares        Int @default(0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
@@ -171,6 +176,17 @@ model Comment {
   replies          Comment[] @relation("CommentReplies")
 
   createdAt     DateTime @default(now())
+}
+
+model Story {
+  id            String @id @map("_id") @default(auto()) @db.ObjectId
+  userId        String @db.ObjectId
+  user          Profile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  mediaUrl     String
+  mediaType   MediaType
+
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
 }
 
 model Chat {

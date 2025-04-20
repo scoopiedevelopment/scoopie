@@ -7,7 +7,7 @@
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "format:check": "prettier . --check",
-    "format:fix": "prettier . --fix",
+    "format:fix": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,md}\"",
     "prepare": "husky",
     "prisma:generate": "dotenv -e .env.development -- npx prisma generate",
     "prisma:migrate": "dotenv -e .env.development -- npx prisma db push",
@@ -17,8 +17,7 @@
   "license": "ISC",
   "lint-staged": {
     "*.{ts,tsx}": [
-      "npm run lint:fix",
-      "npm run format:fix"
+      "npm run lint:fix"
     ]
   },
   "description": "",

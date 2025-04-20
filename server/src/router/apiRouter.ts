@@ -10,6 +10,10 @@ import commentRouter from './commentRouter';
 import clipRouter from './clipRouter';
 import searchRouter from './searchRouter';
 import savedRouter from './savedRouter';
+import countRouter from './countRouter';
+import followRouter from './followRouter';
+
+
 
 const router = Router()
 
@@ -25,5 +29,7 @@ router.use('/like', likeRouter);
 router.use('/comment', commentRouter);
 router.use('/clip', clipRouter);
 router.use('/search', searchRouter);
-router.use("/saved", savedRouter);
+router.use('/saved', savedRouter);
+router.use('/count', countRouter);
+router.use('/connection', followRouter);
 export default router

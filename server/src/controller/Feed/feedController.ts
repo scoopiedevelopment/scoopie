@@ -1,10 +1,10 @@
-import { NextFunction, Request, Response } from "express";
-import httpError from "../../util/httpError";
-import { prisma } from "../../util/prisma";
-import { User } from "../Authentication/types";
-import httpResponse from "../../util/httpResponse";
-import responseMessage from "../../constant/responseMessage";
-import { redis } from "../../util/redis";
+import { NextFunction, Request, Response } from 'express';
+import httpError from '../../util/httpError';
+import { prisma } from '../../util/prisma';
+import { User } from '../Authentication/types';
+import httpResponse from '../../util/httpResponse';
+import responseMessage from '../../constant/responseMessage';
+import { redis } from '../../util/redis';
 
 function shuffleArray<T>(array: T[]): T[] {
     for (let i = array.length - 1; i > 0; i--) {
@@ -129,7 +129,7 @@ export default {
         try {
             const user = req.user as User; 
             const { page } = req.params;
-            const parshedPage = parseInt(page as string || "1") - 1;
+            const parshedPage = parseInt(page || '1') - 1;
             const limit = 20;
             const feed = await getMixedFeed({id: user.userId, limit, page: parshedPage})
             
@@ -137,8 +137,8 @@ export default {
 
 
         } catch (error) {
-            console.error("Error while fetching post feeds.", error);
-            httpError(next, new Error("Error in fetching feeds."), req, 500)
+            // console.error("Error while fetching post feeds.", error);
+            httpError(next, error, req, 500)
         }
     },
     clipFeeds: async (req: Request, res: Response, next: NextFunction) => {
@@ -147,7 +147,7 @@ export default {
 
             const { page } = req.params;
             const limit = 20;
-            const skip = parseInt( page as string || "1") - 1;
+            const skip = parseInt( page || '1') - 1;
 
             const tredingClips = await prisma.clip.findMany({
                 where: {
@@ -182,7 +182,7 @@ export default {
             httpResponse(req, res, 200, responseMessage.SUCCESS, tredingClips);
 
         } catch (error) {
-            console.error("Error in fetching clips feed.", error);
+            // console.error("Error in fetching clips feed.", error);
             httpError(next, error, req, 500);
         }
     },
@@ -190,7 +190,7 @@ export default {
         try {
             const { page } = req.params;
             const limit = 20;
-            const skip = parseInt( page as string || "1") - 1;
+            const skip = parseInt( page || '1') - 1;
             const user = req.user as User; 
 
             const userFollowing = await prisma.profile.findUnique({
@@ -208,8 +208,10 @@ export default {
                     }
                 }
             });
+            
         
             const followingIds = userFollowing?.following.map( (following: {followingId: string}) => following.followingId) || [];
+            
         
             const followingPosts = await prisma.post.findMany({
                 where: {
@@ -245,7 +247,7 @@ export default {
             httpResponse(req, res, 200, responseMessage.SUCCESS, followingPosts);
 
         } catch (error) {
-            console.error("Error in fetching added feeds.", error);
+            // console.error("Error in fetching added feeds.", error);
             httpError(next, error, req, 500);
         }
     }

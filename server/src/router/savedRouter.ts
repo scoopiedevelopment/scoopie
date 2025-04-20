@@ -1,6 +1,6 @@
-import { Router } from "express";
-import savedController from "../controller/Profile/savedController";
-import authentication from "../middleware/authentication";
+import { Router } from 'express';
+import savedController from '../controller/Saved/savedController';
+import authentication from '../middleware/authentication';
 
 
 
