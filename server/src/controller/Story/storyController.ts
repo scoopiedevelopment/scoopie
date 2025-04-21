@@ -60,6 +60,8 @@ export default {
                 },
                 select: {
                     userId: true,
+                    username: true,
+                    profilePic: true,
                     stories: {
                         where: {
                             expiresAt: {
