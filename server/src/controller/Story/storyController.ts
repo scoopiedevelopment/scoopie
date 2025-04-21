@@ -50,7 +50,8 @@ export default {
                     },
                 },
             });
-            const followingIds = following?.following.map((f) => f.followingId);
+            const followingIds = following?.following.map((f) => f.followingId) || [];
+            followingIds.push(userId);
             const stories = await prisma.profile.findMany({
                 where: {
                     userId: {
