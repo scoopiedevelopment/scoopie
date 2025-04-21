@@ -29,6 +29,19 @@ services:
     networks:
       - queue-net
 
+  cache:
+    container_name: cache_container
+    image: redis:latest
+    restart: always
+    ports:
+      - '6379:6379'
+    command: bash -c "echo 1 > /proc/sys/vm/overcommit_memory && redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD}"
+    volumes:
+      - cache:/data
+    networks:
+      - queue-net
+    privileged: true
+
   server:
     container_name: server
     build:
@@ -48,6 +61,7 @@ services:
       - ./vision-key.json:/usr/src/app/vision-key.json
     depends_on:
       - mongo
+      - cache
     networks:
       - queue-net
 
@@ -58,8 +72,13 @@ services:
       dockerfile: docker/development/Dockerfile
     env_file:
       - ./.env.production
+    volumes:
+      - ./server/src:/usr/src/app/src
+      - ./server/package.json:/usr/src/app/package.json
+      - ./server/tsconfig.json:/usr/src/app/tsconfig.json
     depends_on:
       - server
+      - cache
     networks:
       - queue-net
     command: ["sh", "-c", "npx prisma generate && npx ts-node src/workers/likeWorker.ts"]
@@ -72,8 +91,13 @@ services:
       dockerfile: docker/development/Dockerfile
     env_file:
       - ./.env.production
+    volumes:
+      - ./server/src:/usr/src/app/src
+      - ./server/package.json:/usr/src/app/package.json
+      - ./server/tsconfig.json:/usr/src/app/tsconfig.json
     depends_on:
       - server
+      - cache
     networks:
       - queue-net
     command: ["sh", "-c", "npx prisma generate && npx ts-node src/workers/likeWorker.ts"]
