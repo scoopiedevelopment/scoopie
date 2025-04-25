@@ -1,12 +1,13 @@
-import { NextFunction, Request, Response } from "express";
-import httpError from "../../util/httpError";
-import path from "path";
-import httpResponse from "../../util/httpResponse";
-import responseMessage from "../../constant/responseMessage";
-import { checkImageForNSFW } from "../../config/sightEngine";
-import { prisma } from "../../util/prisma";
-import { User } from "../Authentication/types";
-import { isValidObjectId } from "mongoose";
+import { NextFunction, Request, Response } from 'express';
+import httpError from '../../util/httpError';
+import path from 'path';
+import httpResponse from '../../util/httpResponse';
+import responseMessage from '../../constant/responseMessage';
+import { checkImageForNSFW } from '../../config/sightEngine';
+import { prisma } from '../../util/prisma';
+import { User } from '../Authentication/types';
+import { isValidObjectId } from 'mongoose';
+import { CreatePostBody } from './types';
 
 
 
@@ -14,7 +15,7 @@ export default {
 
     createPost: async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { urls, text } = req.body;
+            const { urls, text } = req.body as CreatePostBody;
             
             const safeFiles = [];
             const user = req.user as User;
@@ -24,7 +25,7 @@ export default {
                 for (const fileUrl of urls) {
                     const fileExt = path.extname(fileUrl).toLowerCase();
         
-                    if ([".jpg", ".jpeg", ".png", ".gif", ".webp"].includes(fileExt)) {
+                    if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(fileExt)) {
                         const moderationResult = await checkImageForNSFW(fileUrl);
                         if( moderationResult?.nudity < 0.7 && moderationResult?.violence < 0.7) {
                             safeFiles.push(fileUrl);
@@ -34,7 +35,7 @@ export default {
                 }
 
                 if (safeFiles.length === 0) {
-                    return httpError(next, new Error("All media files were rejected due to NSFW content."), req, 400);
+                    return httpError(next, new Error('All media files were rejected due to NSFW content.'), req, 400);
                 }
             }
     
@@ -45,7 +46,7 @@ export default {
             })
 
             if(!profile) {
-                return httpError(next, new Error("No associated profile found."), req, 404);
+                return httpError(next, new Error('No associated profile found.'), req, 404);
             }
 
             await prisma.post.create({
@@ -64,19 +65,16 @@ export default {
             httpResponse(req, res, 201, responseMessage.SUCCESS, null);
     
         } catch (error) {
-            console.error("Error in creating post.", error);
             httpError(next, error, req, 500);
         }
     },
     deletePost: async (req: Request, res: Response, next: NextFunction) => {
         try {
-            console.log(req.params);
-            
             const { postId } = req.params;
             const user = req.user as User;
 
             if(!postId) {
-                return httpError(next, new Error("No post Id is provided."), req, 400)
+                return httpError(next, new Error('No post Id is provided.'), req, 400)
             }
 
             const post = await prisma.post.delete({
@@ -89,7 +87,6 @@ export default {
             httpResponse(req, res, 201, responseMessage.SUCCESS, post);
 
         } catch (error) {
-            console.error("Error in deleting post.", error);
             httpError(next, error, req, 500);
         }
     },
@@ -98,7 +95,7 @@ export default {
             const { postId } = req.params;
             
             if(!postId) {
-                return httpError(next, new Error("No post Id is provided."), req, 400)
+                return httpError(next, new Error('No post Id is provided.'), req, 400)
             }
 
             const post = await prisma.post.findUnique({
@@ -114,21 +111,20 @@ export default {
             httpResponse(req, res, 201, responseMessage.SUCCESS, post);
 
         } catch (error) {
-            console.error("Error in fetching post.", error);
             httpError(next, error, req, 500);
         }
     },
     getUserPosts: async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { userId, page } = req.params;
-            let parshedPage = parseInt(page || "1") - 1;
+            const parshedPage = parseInt(page || '1') - 1;
 
             if(!userId) {
-                return httpError(next, new Error("No user Id is provided."), req, 400)
+                return httpError(next, new Error('No user Id is provided.'), req, 400)
             }
 
             if(!isValidObjectId(userId)) {
-                return httpError(next, new Error("Invalid userId."), req, 400);
+                return httpError(next, new Error('Invalid userId.'), req, 400);
             }
 
             const post = await prisma.profile.findUnique({
@@ -136,6 +132,9 @@ export default {
                     userId: userId
                 },
                 select: {
+                    username: true,
+                    profilePic: true,
+                    userId: true,
                     posts: {
                         skip: parshedPage * 20,
                         take: 20,
@@ -147,13 +146,12 @@ export default {
             });
 
             if(!post) {
-                return httpError(next, new Error("User post not found. Please check userId."), req, 404);
+                return httpError(next, new Error('User post not found. Please check userId.'), req, 404);
             }
 
             httpResponse(req, res, 201, responseMessage.SUCCESS, post);
 
         } catch (error) {
-            console.error("Error in fetching posts.", error);
             httpError(next, error, req, 500);
         }
     },
