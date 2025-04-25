@@ -136,6 +136,16 @@ export default {
                     profilePic: true,
                     userId: true,
                     posts: {
+                        include: {
+                            media: true,
+                            user: {
+                                select: {
+                                    username: true,
+                                    profilePic: true,
+                                    userId: true
+                                } 
+                            }   
+                        },
                         skip: parshedPage * 20,
                         take: 20,
                         orderBy: {
