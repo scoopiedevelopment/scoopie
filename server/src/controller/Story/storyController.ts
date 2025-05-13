@@ -52,31 +52,56 @@ export default {
             });
             const followingIds = following?.following.map((f) => f.followingId) || [];
             followingIds.push(userId);
-            const stories = await prisma.profile.findMany({
+            // const stories = await prisma.profile.findMany({
+            //     where: {
+            //         userId: {
+            //             in: followingIds,
+            //         },
+            //     },
+            //     select: {
+            //         userId: true,
+            //         username: true,
+            //         profilePic: true,
+            //         stories: {
+            //             where: {
+            //                 expiresAt: {
+            //                     gte: new Date(),
+            //                 },
+            //             },
+            //             orderBy: {
+            //                 createdAt: 'desc',
+            //             },
+            //             take: limit,
+            //         },
+            //     },
+            //     skip: (Number(page) - 1) * limit,
+            //     take: limit,
+            // });
+
+            const stories = await prisma.story.findMany({
                 where: {
                     userId: {
                         in: followingIds,
                     },
-                },
-                select: {
-                    userId: true,
-                    username: true,
-                    profilePic: true,
-                    stories: {
-                        where: {
-                            expiresAt: {
-                                gte: new Date(),
-                            },
-                        },
-                        orderBy: {
-                            createdAt: 'desc',
-                        },
-                        take: limit,
+                    expiresAt: {
+                        gte: new Date(),
                     },
                 },
-                skip: (Number(page) - 1) * limit,
+                include: {
+                    user: {
+                        select: {
+                            userId: true,
+                            username: true,
+                            profilePic: true,
+                        },
+                    },
+                },
+                orderBy: {
+                    createdAt: 'desc',
+                },
                 take: limit,
-            });
+                skip: (Number(page) - 1) * limit
+            })
             httpResponse(req, res, 200, responseMessage.SUCCESS, stories);
 
         } catch (error) {

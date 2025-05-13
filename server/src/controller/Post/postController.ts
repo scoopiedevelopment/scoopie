@@ -132,9 +132,6 @@ export default {
                     userId: userId
                 },
                 select: {
-                    username: true,
-                    profilePic: true,
-                    userId: true,
                     posts: {
                         include: {
                             media: true,
