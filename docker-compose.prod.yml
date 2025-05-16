@@ -83,7 +83,7 @@ services:
       - cache
     networks:
       - queue-net
-    command: ["sh", "-c", "npx prisma generate && npx ts-node src/workers/likeWorker.ts"]
+    command: ["sh", "-c", "npx prisma generate && npx ts-node src/workers/commentWorker.ts"]
 
 
   likeworker: 
