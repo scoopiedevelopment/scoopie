@@ -17,12 +17,9 @@ export default {
             const user = req.user as User;
             const likeKey = `like_count:${postId || clipId || commentId}`;
             const userLikeKey = `user_liked:${postId || clipId || commentId}`;
-            console.log(userLikeKey);
             
             let hasLiked: boolean = !!(await redis.sismember(userLikeKey, user!.userId));
 
-            console.log(hasLiked);
-            
             if (!hasLiked) {
                 
                 const existingLike = await prisma.like.findFirst({
