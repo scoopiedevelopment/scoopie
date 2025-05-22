@@ -13,6 +13,7 @@ import savedRouter from './savedRouter';
 import countRouter from './countRouter';
 import followRouter from './followRouter';
 import storyRouter from './storyRouter';
+import notificationRouter from './notificationRouter';
 
 
 const router = Router()
@@ -33,4 +34,5 @@ router.use('/saved', savedRouter);
 router.use('/count', countRouter);
 router.use('/connection', followRouter);
 router.use('/story', storyRouter);
+router.use('/notification', notificationRouter);
 export default router

@@ -3,6 +3,8 @@ import { User } from '../Authentication/types';
 import { prisma } from '../../util/prisma';
 import httpError from '../../util/httpError';
 import httpResponse from '../../util/httpResponse';
+import { NotificationType } from '@prisma/client';
+import { sendNotification } from '../../util/notification';
 
 
 
@@ -43,23 +45,65 @@ export default {
 
             if (user.type === 'Private') {
 
-                await prisma.follow.create({
+                const user = await prisma.follow.create({
                     data: {
                         followerId: userId,
                         followingId: id,
                         status: 'Pending'
+                    },
+                    select: {
+                        follower: true
                     }
                 });
+                
+                await prisma.notification.create({
+                    data: {
+                        userId: id,
+                        type: NotificationType.follow,
+                        senderId: userId,
+                        message: `${user.follower.username} wants to follow you.`
+                    }
+                })
+
                 return httpResponse(req, res, 200, 'Follow request sent', null);
+
             } else {
                 
-                await prisma.follow.create({
+                const user = await prisma.follow.create({
                     data: {
                         followerId: userId,
                         followingId: id,
                         status: 'Accepted'
+                    },
+                    select: {
+                        follower: {
+                            select: {
+                                fcmTokens: true,
+                                username: true
+                            }
+                        }
                     }
                 });
+
+                await prisma.notification.create({
+                    data: {
+                        userId: id,
+                        type: NotificationType.follow,
+                        senderId: userId,
+                        message: `${user.follower.username} followed you.`
+                    }
+                });
+
+                if(user.follower.fcmTokens.length > 0) {
+                    user.follower.fcmTokens.forEach(token => {
+                        sendNotification({
+                            fcmToken: token.token,
+                            title: 'New follower',
+                            body: `${user.follower.username} followed you.`
+                        });
+                    })
+                }
+
                 return httpResponse(req, res, 200, 'Followed', null);
             }
             

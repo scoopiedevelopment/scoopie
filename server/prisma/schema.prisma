@@ -37,6 +37,14 @@ enum FollowStatus {
   Accepted
 }
 
+enum NotificationType {
+  like
+  comment
+  follow
+  mention
+  system    
+}
+
 model User {
   id              String  @id @map("_id") @default(auto()) @db.ObjectId
   email           String? 
@@ -60,6 +68,7 @@ model Profile {
   website         String?
   profilePic      String?
   address         String?
+  fcmTokens       FcmToken[]
   type            ProfileType @default(Public)
   posts           Post[]
   clips           Clip[]
@@ -69,6 +78,31 @@ model Profile {
   followers       Follow[] @relation("following")
   saved           Saved[]
   stories         Story[]
+  notifications   Notification[]
+  sentNotifications Notification[] @relation("SenderNotifications")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model FcmToken {
+  id              String @id @map("_id") @default(auto()) @db.ObjectId
+  userId          String @db.ObjectId
+  user            Profile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  token           String
+  deviceInfo      String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Notification {
+  id              String @id @map("_id") @default(auto()) @db.ObjectId
+  userId          String @db.ObjectId
+  user            Profile @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  senderId        String? @db.ObjectId
+  sender          Profile? @relation("SenderNotifications", fields: [senderId], references: [userId], onDelete: Cascade)
+  type            NotificationType
+  message         String?
+  isRead          Boolean @default(false)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }

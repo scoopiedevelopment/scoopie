@@ -11,7 +11,7 @@ import { CommentBody, CommentData, UserDetails } from './types';
 export default {
     comment: async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { postId, clipId, commentId, comment } = req.body as CommentBody;
+            const { postId, clipId, commentId, comment, commentTo } = req.body as CommentBody;
             const user = req.user as User;
 
             const commentData = {
@@ -19,6 +19,7 @@ export default {
                 clipId: !clipId ? null : clipId,
                 parentCommentId: !commentId ? null : commentId,
                 comment,
+                commentTo,
                 commentById: user.userId,
                 createdAt: new Date().toISOString(),
             };
@@ -29,8 +30,6 @@ export default {
             return httpResponse(req, res, 201, 'Commented Successfully.', null);
 
         } catch (error) {
-
-            // console.error("Error while creating comment.", error);
             return httpError(next, error, req, 500)
         }
     },

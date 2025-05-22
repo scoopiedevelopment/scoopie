@@ -5,7 +5,8 @@ export interface CommentBody {
     postId: string,
     clipId: string,
     commentId: string,
-    comment: string
+    comment: string,
+    commentTo: string
 }
   
 

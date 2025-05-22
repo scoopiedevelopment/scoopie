@@ -12,14 +12,17 @@ export default {
     toggleLike: async (req: Request, res: Response, next: NextFunction) => {
 
         try {
-            const { postId, clipId, commentId } = req.body;
+            const { postId, clipId, commentId, likedTo } = req.body;
 
             const user = req.user as User;
             const likeKey = `like_count:${postId || clipId || commentId}`;
             const userLikeKey = `user_liked:${postId || clipId || commentId}`;
-
+            console.log(userLikeKey);
+            
             let hasLiked: boolean = !!(await redis.sismember(userLikeKey, user!.userId));
 
+            console.log(hasLiked);
+            
             if (!hasLiked) {
                 
                 const existingLike = await prisma.like.findFirst({
@@ -39,6 +42,8 @@ export default {
             if (hasLiked) {
                 
                 await redis.decr(likeKey);
+                console.log(userLikeKey, user!.userId);
+                
                 await redis.srem(userLikeKey, user!.userId);
                 await likeQueue.add('toggleLike', {
                     postId: postId || null,
@@ -59,6 +64,7 @@ export default {
                 commentId: commentId || null,
                 type: 'like',
                 likedById: user.userId,
+                likedTo: likedTo,
                 createdAt: new Date().toISOString()
             });
 

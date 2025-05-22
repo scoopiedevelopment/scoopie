@@ -86,7 +86,7 @@ services:
       - cache
     networks:
       - queue-net
-    command: ["npx", "ts-node", "src/workers/commentWorker.ts"]
+    command: ["npx", "ts-node-dev", "src/workers/commentWorker.ts"]
   
   likeworker: 
     container_name: likeworker
@@ -104,7 +104,7 @@ services:
       - cache
     networks:
       - queue-net
-    command: ["npx", "ts-node", "src/workers/likeWorker.ts"]
+    command: ["npx", "ts-node-dev", "src/workers/likeWorker.ts"]
 
 networks:
   queue-net:

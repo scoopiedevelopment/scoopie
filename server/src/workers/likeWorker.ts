@@ -1,6 +1,8 @@
 import { Worker } from 'bullmq';
 import { prisma } from '../util/prisma';
 import { redis } from '../util/redis';
+import { NotificationType } from '@prisma/client';
+import { sendNotification } from '../util/notification';
 
 const BATCH_SIZE = 50;
 const BATCH_TIME_MS =2 * 60 * 1000;
@@ -12,6 +14,8 @@ new Worker(
   "likeQueue",
   async (job) => {
     const like = job.data;
+    console.log(like);
+    
     likeBatch.push(like);
 
     console.log(`Added like to batch, total: ${likeBatch.length}`);
@@ -45,6 +49,7 @@ async function processBatch() {
   for (const action of latestActionsMap.values()) {
     const baseData: any = {
       likedById: action.likedById,
+      likedTo: action.likedTo
     };
     if (action.postId) baseData.postId = action.postId;
     if (action.clipId) baseData.clipId = action.clipId;
@@ -59,12 +64,46 @@ async function processBatch() {
 
   try {
     if (finalLikes.length > 0) {
-      await prisma.like.createMany({ data: finalLikes });
+      const likesToCreate = finalLikes.map(({likedTo, ...rest}) => rest);
+      await prisma.like.createMany({ data: likesToCreate });
 
       for (const like of finalLikes) {
         const userLikeKey = `user_liked:${like.postId || like.clipId || like.commentId}`;
         await redis.srem(userLikeKey, like.likedById);
       }
+      const users = await prisma.profile.findMany({
+        where: {
+          userId: {
+            in: finalLikes.map((val) => val.likedById)
+          }
+        },
+        select: {
+          username: true,
+          userId: true,
+          fcmTokens: true
+        }
+      });
+      
+      const notificationData = finalLikes.map(like => ({
+        userId: like.likedTo,
+        type: NotificationType.like,
+        senderId: like.likedById,
+        message: `${users.find(user => user.userId === like.likedById)?.username || "Someone"} liked your ${like.postId ? 'post' : like.clipId ? 'clip' : 'comment'}.`, 
+      }));
+
+      await prisma.notification.createMany({
+        data: notificationData
+      });
+
+      notificationData.map((notification) => {
+        users.find(user => user.userId === notification.userId)?.fcmTokens.map(token => {
+          sendNotification({
+            fcmToken: token.token,
+            title: 'New Like',
+            body: notification.message
+          });
+        })
+      })
     }
 
     if (finalUnlikes.length > 0) {
@@ -91,3 +130,5 @@ async function processBatch() {
     batchTimer = null;
   }
 }
+
+console.log("Like worker started.")
