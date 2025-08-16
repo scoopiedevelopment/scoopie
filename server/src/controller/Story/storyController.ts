@@ -35,8 +35,11 @@ export default {
 
         try {
             const { userId } = req.user as User;
-            const { page = 1 } = req.query;
-            const limit = 20;
+            const { page = 1, limit = 10 } = req.query;
+
+            const pageNumber = parseInt(page as string);
+            const limitNumber = parseInt(limit as string);
+            const skip = (pageNumber - 1) * limitNumber;
 
             const following = await prisma.profile.findUnique({
                 where: {
@@ -44,65 +47,84 @@ export default {
                 },
                 select: {
                     following: {
+                        where: {
+                            status: 'Accepted'
+                        },
                         select: {
                             followingId: true,
                         },
                     },
                 },
             });
+
             const followingIds = following?.following.map((f) => f.followingId) || [];
             followingIds.push(userId);
-            // const stories = await prisma.profile.findMany({
-            //     where: {
-            //         userId: {
-            //             in: followingIds,
-            //         },
-            //     },
-            //     select: {
-            //         userId: true,
-            //         username: true,
-            //         profilePic: true,
-            //         stories: {
-            //             where: {
-            //                 expiresAt: {
-            //                     gte: new Date(),
-            //                 },
-            //             },
-            //             orderBy: {
-            //                 createdAt: 'desc',
-            //             },
-            //             take: limit,
-            //         },
-            //     },
-            //     skip: (Number(page) - 1) * limit,
-            //     take: limit,
-            // });
 
-            const stories = await prisma.story.findMany({
-                where: {
-                    userId: {
-                        in: followingIds,
-                    },
-                    expiresAt: {
-                        gte: new Date(),
-                    },
-                },
-                include: {
-                    user: {
-                        select: {
-                            userId: true,
-                            username: true,
-                            profilePic: true,
+            const [usersWithStories, totalUsersWithStories] = await Promise.all([
+                prisma.profile.findMany({
+                    where: {
+                        userId: {
+                            in: followingIds,
+                        },
+                        stories: {
+                            some: {
+                                expiresAt: {
+                                    gte: new Date(),
+                                },
+                            },
                         },
                     },
-                },
-                orderBy: {
-                    createdAt: 'desc',
-                },
-                take: limit,
-                skip: (Number(page) - 1) * limit
-            })
-            httpResponse(req, res, 200, responseMessage.SUCCESS, stories);
+                    select: {
+                        userId: true,
+                        username: true,
+                        profilePic: true,
+                        stories: {
+                            where: {
+                                expiresAt: {
+                                    gte: new Date(),
+                                },
+                            },
+                            orderBy: {
+                                createdAt: 'desc',
+                            },
+                        },
+                    },
+                    skip,
+                    take: limitNumber,
+                }),
+                prisma.profile.count({
+                    where: {
+                        userId: {
+                            in: followingIds,
+                        },
+                        stories: {
+                            some: {
+                                expiresAt: {
+                                    gte: new Date(),
+                                },
+                            },
+                        },
+                    },
+                })
+            ]);
+
+            const filteredUsers = usersWithStories.filter(user => user.stories.length > 0);
+
+            const totalPages = Math.ceil(totalUsersWithStories / limitNumber);
+            const hasNext = pageNumber < totalPages;
+            const hasPrev = pageNumber > 1;
+
+            httpResponse(req, res, 200, responseMessage.SUCCESS, {
+                stories: filteredUsers,
+                pagination: {
+                    currentPage: pageNumber,
+                    totalPages,
+                    totalCount: totalUsersWithStories,
+                    hasNext,
+                    hasPrev,
+                    limit: limitNumber
+                }
+            });
 
         } catch (error) {
             // console.error("Error in getting Stories.", error);

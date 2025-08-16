@@ -201,24 +201,67 @@ export default {
     getFollowers: async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { userId } = req.user as User;
+            const { page = 1, limit = 10, search = '' } = req.query;
 
-            const followers = await prisma.follow.findMany({
-                where: {
-                    followingId: userId,
-                    status: 'Accepted'
-                },
-                include: {
+            const pageNumber = parseInt(page as string);
+            const limitNumber = parseInt(limit as string);
+            const skip = (pageNumber - 1) * limitNumber;
+
+            const searchCondition = search 
+                ? {
                     follower: {
-                        select: {
-                            username: true,
-                            profilePic: true,
-                            userId: true
+                        username: {
+                            contains: search as string,
+                            mode: 'insensitive' as const
                         }
                     }
                 }
-            });
+                : {};
 
-            return httpResponse(req, res, 200, 'Followers fetched', followers);
+            const [followers, totalCount] = await Promise.all([
+                prisma.follow.findMany({
+                    where: {
+                        followingId: userId,
+                        status: 'Accepted',
+                        ...searchCondition
+                    },
+                    select: {
+                        follower: {
+                            select: {
+                                username: true,
+                                name: true,
+                                profilePic: true,
+                                userId: true
+                            }
+                        }
+                    },
+                    skip,
+                    take: limitNumber,
+                }),
+                prisma.follow.count({
+                    where: {
+                        followingId: userId,
+                        status: 'Accepted',
+                        ...searchCondition
+                    }
+                })
+            ]);
+
+            const totalPages = Math.ceil(totalCount / limitNumber);
+            const hasNext = pageNumber < totalPages;
+            const hasPrev = pageNumber > 1;
+
+            return httpResponse(req, res, 200, 'Followers fetched', {
+                followers,
+                pagination: {
+                    currentPage: pageNumber,
+                    totalPages,
+                    totalCount,
+                    hasNext,
+                    hasPrev,
+                    limit: limitNumber
+                }
+            });
         } catch (error) {
             // console.error("Error in fetching followers", error);
             return httpError(next, error, req, 500);
@@ -227,24 +270,67 @@ export default {
     getFollowing: async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { userId } = req.user as User;
+            const { page = 1, limit = 10, search = '' } = req.query;
 
-            const following = await prisma.follow.findMany({
-                where: {
-                    followerId: userId,
-                    status: 'Accepted'
-                },
-                include: {
+            const pageNumber = parseInt(page as string);
+            const limitNumber = parseInt(limit as string);
+            const skip = (pageNumber - 1) * limitNumber;
+
+            const searchCondition = search 
+                ? {
                     following: {
-                        select: {
-                            username: true,
-                            profilePic: true,
-                            userId: true
+                        username: {
+                            contains: search as string,
+                            mode: 'insensitive' as const
                         }
                     }
                 }
-            });
+                : {};
 
-            return httpResponse(req, res, 200, 'Following fetched', following);
+            const [following, totalCount] = await Promise.all([
+                prisma.follow.findMany({
+                    where: {
+                        followerId: userId,
+                        status: 'Accepted',
+                        ...searchCondition
+                    },
+                    select: {
+                        following: {
+                            select: {
+                                username: true,
+                                name: true,
+                                profilePic: true,
+                                userId: true
+                            }
+                        }
+                    },
+                    skip,
+                    take: limitNumber
+                }),
+                prisma.follow.count({
+                    where: {
+                        followerId: userId,
+                        status: 'Accepted',
+                        ...searchCondition
+                    }
+                })
+            ]);
+
+            const totalPages = Math.ceil(totalCount / limitNumber);
+            const hasNext = pageNumber < totalPages;
+            const hasPrev = pageNumber > 1;
+
+            return httpResponse(req, res, 200, 'Following fetched', {
+                following,
+                pagination: {
+                    currentPage: pageNumber,
+                    totalPages,
+                    totalCount,
+                    hasNext,
+                    hasPrev,
+                    limit: limitNumber
+                }
+            });
         } catch (error) {
             // console.error("Error in fetching following", error);
             return httpError(next, error, req, 500);
@@ -263,6 +349,7 @@ export default {
                     follower: {
                         select: {
                             username: true,
+                            name: true,
                             profilePic: true,
                             userId: true
                         }
@@ -273,6 +360,197 @@ export default {
             return httpResponse(req, res, 200, 'Follow requests fetched', followRequests);
         } catch (error) {
             // console.error("Error in fetching follow requests", error);
+            return httpError(next, error, req, 500);
+        }
+    },
+    getOtherUserFollowers: async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { id } = req.params;
+            const { userId } = req.user as User;
+            const { page = 1, limit = 10, search = '' } = req.query;
+
+            const pageNumber = parseInt(page as string);
+            const limitNumber = parseInt(limit as string);
+            const skip = (pageNumber - 1) * limitNumber;
+
+            const targetUser = await prisma.profile.findFirst({
+                where: {
+                    userId: id
+                },
+                select: {
+                    type: true
+                }
+            });
+
+            if (!targetUser) {
+                return httpError(next, new Error('User not found'), req, 404);
+            }
+
+            if (targetUser.type === 'Private') {
+                const isFollowing = await prisma.follow.findFirst({
+                    where: {
+                        followerId: userId,
+                        followingId: id,
+                        status: 'Accepted'
+                    }
+                });
+
+                if (!isFollowing && userId !== id) {
+                    return httpError(next, new Error('This account is private'), req, 403);
+                }
+            }
+
+            const searchCondition = search 
+                ? {
+                    follower: {
+                        username: {
+                            contains: search as string,
+                            mode: 'insensitive' as const
+                        }
+                    }
+                }
+                : {};
+
+            const [followers, totalCount] = await Promise.all([
+                prisma.follow.findMany({
+                    where: {
+                        followingId: id,
+                        status: 'Accepted',
+                        ...searchCondition
+                    },
+                    select: {
+                        follower: {
+                            select: {
+                                username: true,
+                                name: true,
+                                profilePic: true,
+                                userId: true
+                            }
+                        }
+                    },
+                    skip,
+                    take: limitNumber
+                }),
+                prisma.follow.count({
+                    where: {
+                        followingId: id,
+                        status: 'Accepted',
+                        ...searchCondition
+                    }
+                })
+            ]);
+
+            const totalPages = Math.ceil(totalCount / limitNumber);
+            const hasNext = pageNumber < totalPages;
+            const hasPrev = pageNumber > 1;
+
+            return httpResponse(req, res, 200, 'Followers fetched', {
+                followers,
+                pagination: {
+                    currentPage: pageNumber,
+                    totalPages,
+                    totalCount,
+                    hasNext,
+                    hasPrev,
+                    limit: limitNumber
+                }
+            });
+        } catch (error) {
+            return httpError(next, error, req, 500);
+        }
+    },
+    getOtherUserFollowing: async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { id } = req.params;
+            const { userId } = req.user as User;
+            const { page = 1, limit = 10, search = '' } = req.query;
+
+            const pageNumber = parseInt(page as string);
+            const limitNumber = parseInt(limit as string);
+            const skip = (pageNumber - 1) * limitNumber;
+
+            const targetUser = await prisma.profile.findFirst({
+                where: {
+                    userId: id
+                },
+                select: {
+                    type: true
+                }
+            });
+
+            if (!targetUser) {
+                return httpError(next, new Error('User not found'), req, 404);
+            }
+
+            if (targetUser.type === 'Private') {
+                const isFollowing = await prisma.follow.findFirst({
+                    where: {
+                        followerId: userId,
+                        followingId: id,
+                        status: 'Accepted'
+                    }
+                });
+
+                if (!isFollowing && userId !== id) {
+                    return httpError(next, new Error('This account is private'), req, 403);
+                }
+            }
+
+            const searchCondition = search 
+                ? {
+                    following: {
+                        username: {
+                            contains: search as string,
+                            mode: 'insensitive' as const
+                        }
+                    }
+                }
+                : {};
+
+            const [following, totalCount] = await Promise.all([
+                prisma.follow.findMany({
+                    where: {
+                        followerId: id,
+                        status: 'Accepted',
+                        ...searchCondition
+                    },
+                    select: {
+                        following: {
+                            select: {
+                                username: true,
+                                profilePic: true,
+                                userId: true
+                            }
+                        }
+                    },
+                    skip,
+                    take: limitNumber
+                }),
+                prisma.follow.count({
+                    where: {
+                        followerId: id,
+                        status: 'Accepted',
+                        ...searchCondition
+                    }
+                })
+            ]);
+
+            const totalPages = Math.ceil(totalCount / limitNumber);
+            const hasNext = pageNumber < totalPages;
+            const hasPrev = pageNumber > 1;
+
+            return httpResponse(req, res, 200, 'Following fetched', {
+                following,
+                pagination: {
+                    currentPage: pageNumber,
+                    totalPages,
+                    totalCount,
+                    hasNext,
+                    hasPrev,
+                    limit: limitNumber
+                }
+            });
+        } catch (error) {
             return httpError(next, error, req, 500);
         }
     }

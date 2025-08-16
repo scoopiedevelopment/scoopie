@@ -116,47 +116,243 @@ export default {
     },
     getUserPosts: async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { userId, page } = req.params;
-            const parshedPage = parseInt(page || '1') - 1;
+            const { userId } = req.params;
+            const currentUser = req.user as User;
+            const { page = 1, limit = 20 } = req.query;
 
-            if(!userId) {
-                return httpError(next, new Error('No user Id is provided.'), req, 400)
+            const pageNumber = parseInt(page as string);
+            const limitNumber = parseInt(limit as string);
+            const skip = (pageNumber - 1) * limitNumber;
+
+            const targetUserId = userId || currentUser.userId;
+
+            if(!targetUserId || !isValidObjectId(targetUserId)) {
+                return httpError(next, new Error('Invalid userId'), req, 400);
             }
 
-            if(!isValidObjectId(userId)) {
-                return httpError(next, new Error('Invalid userId.'), req, 400);
-            }
-
-            const post = await prisma.profile.findUnique({
+            // Check if target user exists and get privacy settings
+            const targetUser = await prisma.profile.findFirst({
                 where: {
-                    userId: userId
+                    userId: targetUserId
                 },
                 select: {
-                    posts: {
-                        include: {
-                            media: true,
-                            user: {
-                                select: {
-                                    username: true,
-                                    profilePic: true,
-                                    userId: true
-                                } 
-                            }   
-                        },
-                        skip: parshedPage * 20,
-                        take: 20,
-                        orderBy: {
-                            createdAt: 'desc'
-                        }
-                    }
+                    type: true
                 }
             });
 
-            if(!post) {
-                return httpError(next, new Error('User post not found. Please check userId.'), req, 404);
+            if (!targetUser) {
+                return httpError(next, new Error('User not found'), req, 404);
             }
 
-            httpResponse(req, res, 201, responseMessage.SUCCESS, post);
+            // Privacy check - if private account and not the owner
+            if (targetUser.type === 'Private' && targetUserId !== currentUser.userId) {
+                const isFollowing = await prisma.follow.findFirst({
+                    where: {
+                        followerId: currentUser.userId,
+                        followingId: targetUserId,
+                        status: 'Accepted'
+                    }
+                });
+
+                if (!isFollowing) {
+                    return httpResponse(req, res, 200, responseMessage.SUCCESS, {
+                        posts: [],
+                        pagination: {
+                            currentPage: pageNumber,
+                            totalPages: 0,
+                            totalCount: 0,
+                            hasNext: false,
+                            hasPrev: false,
+                            limit: limitNumber
+                        }
+                    });
+                }
+            }
+
+            const [posts, totalCount] = await Promise.all([
+                prisma.post.findMany({
+                    where: {
+                        userId: targetUserId,
+                        visibility: 'Public'
+                    },
+                    include: {
+                        media: {
+                            where: {
+                                type: 'Image'
+                            }
+                        },
+                        user: {
+                            select: {
+                                username: true,
+                                profilePic: true,
+                                userId: true
+                            }
+                        },
+                        _count: {
+                            select: {
+                                likes: true,
+                                comments: true
+                            }
+                        }
+                    },
+                    orderBy: {
+                        createdAt: 'desc'
+                    },
+                    skip,
+                    take: limitNumber
+                }),
+                prisma.post.count({
+                    where: {
+                        userId: targetUserId,
+                        visibility: 'Public'
+                    }
+                })
+            ]);
+
+            const totalPages = Math.ceil(totalCount / limitNumber);
+            const hasNext = pageNumber < totalPages;
+            const hasPrev = pageNumber > 1;
+
+            httpResponse(req, res, 200, responseMessage.SUCCESS, {
+                post: posts,
+                pagination: {
+                    currentPage: pageNumber,
+                    totalPages,
+                    totalCount,
+                    hasNext,
+                    hasPrev,
+                    limit: limitNumber
+                }
+            });
+
+        } catch (error) {
+            httpError(next, error, req, 500);
+        }
+    },
+    getUserTextPosts: async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { userId } = req.params;
+            const currentUser = req.user as User;
+            const { page = 1, limit = 20 } = req.query;
+
+            const pageNumber = parseInt(page as string);
+            const limitNumber = parseInt(limit as string);
+            const skip = (pageNumber - 1) * limitNumber;
+
+            const targetUserId = userId || currentUser.userId;
+
+            if(!targetUserId || !isValidObjectId(targetUserId)) {
+                return httpError(next, new Error('Invalid userId'), req, 400);
+            }
+
+            const targetUser = await prisma.profile.findFirst({
+                where: {
+                    userId: targetUserId
+                },
+                select: {
+                    type: true
+                }
+            });
+
+            if (!targetUser) {
+                return httpError(next, new Error('User not found'), req, 404);
+            }
+
+            if (targetUser.type === 'Private' && targetUserId !== currentUser.userId) {
+                const isFollowing = await prisma.follow.findFirst({
+                    where: {
+                        followerId: currentUser.userId,
+                        followingId: targetUserId,
+                        status: 'Accepted'
+                    }
+                });
+
+                if (!isFollowing) {
+                    return httpResponse(req, res, 200, responseMessage.SUCCESS, {
+                        posts: [],
+                        pagination: {
+                            currentPage: pageNumber,
+                            totalPages: 0,
+                            totalCount: 0,
+                            hasNext: false,
+                            hasPrev: false,
+                            limit: limitNumber
+                        }
+                    });
+                }
+            }
+
+            const [posts, totalCount] = await Promise.all([
+                prisma.post.findMany({
+                    where: {
+                        userId: targetUserId,
+                        visibility: 'Public',
+                        AND: [
+                            { text: { not: null } },
+                            { text: { not: '' } },
+                            {
+                                OR: [
+                                    { media: { none: {} } },
+                                    { media: { every: { type: { notIn: ['Image', 'Video'] } } } }
+                                ]
+                            }
+                        ]
+                    },
+                    include: {
+                        media: true,
+                        user: {
+                            select: {
+                                username: true,
+                                profilePic: true,
+                                userId: true
+                            }
+                        },
+                        _count: {
+                            select: {
+                                likes: true,
+                                comments: true
+                            }
+                        }
+                    },
+                    orderBy: {
+                        createdAt: 'desc'
+                    },
+                    skip,
+                    take: limitNumber
+                }),
+                prisma.post.count({
+                    where: {
+                        userId: targetUserId,
+                        visibility: 'Public',
+                        AND: [
+                            { text: { not: null } },
+                            { text: { not: '' } },
+                            {
+                                OR: [
+                                    { media: { none: {} } },
+                                    { media: { every: { type: { notIn: ['Image', 'Video'] } } } }
+                                ]
+                            }
+                        ]
+                    }
+                })
+            ]);
+
+            const totalPages = Math.ceil(totalCount / limitNumber);
+            const hasNext = pageNumber < totalPages;
+            const hasPrev = pageNumber > 1;
+
+            httpResponse(req, res, 200, responseMessage.SUCCESS, {
+                posts,
+                pagination: {
+                    currentPage: pageNumber,
+                    totalPages,
+                    totalCount,
+                    hasNext,
+                    hasPrev,
+                    limit: limitNumber
+                }
+            });
 
         } catch (error) {
             httpError(next, error, req, 500);

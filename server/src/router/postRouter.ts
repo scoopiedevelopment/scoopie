@@ -11,6 +11,7 @@ const router = Router();
 router.post('/create', authentication, validateRequest(createPostSchema), postController.createPost);
 router.delete('/delete/:postId', authentication, postController.deletePost);
 router.get('/get-post-by-id/:postId', authentication, postController.getPostById);
-router.get('/get-user-posts/:userId/:page', authentication, postController.getUserPosts);
+router.get('/get-user-posts/:userId?', authentication, postController.getUserPosts);
+router.get('/get-user-text-posts/:userId?', authentication, postController.getUserTextPosts);
 
 export default router;

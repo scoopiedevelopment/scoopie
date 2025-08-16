@@ -72,47 +72,111 @@ export default {
         }
     },
     getUserClips: async (req: Request, res: Response, next: NextFunction) => {
-
         try {
+            const { userId } = req.params;
+            const currentUser = req.user as User;
+            const { page = 1, limit = 20 } = req.query;
 
-            const { userId, page } = req.params;
-            const parshedPage = parseInt(page || '1') - 1;
+            const pageNumber = parseInt(page as string);
+            const limitNumber = parseInt(limit as string);
+            const skip = (pageNumber - 1) * limitNumber;
 
-            if(!userId) {
-                return httpError(next, new Error('No user Id is provided.'), req, 400)
+            const targetUserId = userId || currentUser.userId;
+
+            if(!targetUserId || !isValidObjectId(targetUserId)) {
+                return httpError(next, new Error('Invalid userId'), req, 400);
             }
 
-            if(!isValidObjectId(userId)) {
-                return httpError(next, new Error('Invalid userId.'), req, 400);
-            }
-
-            const clips = await prisma.clip.findMany({
+            // Check if target user exists and get privacy settings
+            const targetUser = await prisma.profile.findFirst({
                 where: {
-                    userId: userId
+                    userId: targetUserId
                 },
-                include: {
-                    user: {
-                        select: {
-                            profilePic: true,
-                            username: true,
-                            userId: true
+                select: {
+                    type: true
+                }
+            });
+
+            if (!targetUser) {
+                return httpError(next, new Error('User not found'), req, 404);
+            }
+
+            // Privacy check - if private account and not the owner
+            if (targetUser.type === 'Private' && targetUserId !== currentUser.userId) {
+                const isFollowing = await prisma.follow.findFirst({
+                    where: {
+                        followerId: currentUser.userId,
+                        followingId: targetUserId,
+                        status: 'Accepted'
+                    }
+                });
+
+                if (!isFollowing) {
+                    return httpResponse(req, res, 200, responseMessage.SUCCESS, {
+                        clips: [],
+                        pagination: {
+                            currentPage: pageNumber,
+                            totalPages: 0,
+                            totalCount: 0,
+                            hasNext: false,
+                            hasPrev: false,
+                            limit: limitNumber
+                        }
+                    });
+                }
+            }
+
+            const [clips, totalCount] = await Promise.all([
+                prisma.clip.findMany({
+                    where: {
+                        userId: targetUserId,
+                        visibility: 'Public'
+                    },
+                    include: {
+                        user: {
+                            select: {
+                                profilePic: true,
+                                username: true,
+                                userId: true
+                            }
+                        },
+                        _count: {
+                            select: {
+                                likes: true,
+                                comments: true,
+                            }
                         }
                     },
-                    _count: {
-                        select: {
-                            likes: true,
-                            comments: true,
-                        }
+                    skip,
+                    take: limitNumber,
+                    orderBy: {
+                        createdAt: 'desc'
                     }
-                },
-                skip: parshedPage * 20,
-                take: 20,
-                orderBy: {
-                    createdAt: 'desc'
-                }
-            })
+                }),
+                prisma.clip.count({
+                    where: {
+                        userId: targetUserId,
+                        visibility: 'Public'
+                    }
+                })
+            ]);
 
-            httpResponse(req, res, 200, responseMessage.SUCCESS, clips)
+            const totalPages = Math.ceil(totalCount / limitNumber);
+            const hasNext = pageNumber < totalPages;
+            const hasPrev = pageNumber > 1;
+
+            httpResponse(req, res, 200, responseMessage.SUCCESS, {
+                clips,
+                pagination: {
+                    currentPage: pageNumber,
+                    totalPages,
+                    totalCount,
+                    hasNext,
+                    hasPrev,
+                    limit: limitNumber
+                }
+            });
+
         } catch (error) {
             // console.error("Error in fetching clips.", error);
             httpError(next, error, req, 500);

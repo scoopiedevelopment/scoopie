@@ -47,7 +47,8 @@ async function getMixedFeed({id, limit, page}: {id: string, limit: number, page:
         include: {
             media: {
               select: {
-                url: true
+                url: true,
+                type: true
               }  
             },
             user: {
@@ -84,7 +85,8 @@ async function getMixedFeed({id, limit, page}: {id: string, limit: number, page:
         include: {
             media: {
                 select: {
-                  url: true
+                  url: true,
+                  type: true
                 }  
             },
             user: {
@@ -222,7 +224,8 @@ export default {
                 include: {
                     media: {
                       select: {
-                        url: true
+                        url: true,
+                        type: true
                       }  
                     },
                     user: {

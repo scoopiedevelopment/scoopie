@@ -90,3 +90,1279 @@
         "SERVER_URL": "http://localhost:5000"
     }
 }
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T04:54:50.931Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T04:54:50.936Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:01:03.810Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "POST",
+            "url": "/v1/auth/login"
+        },
+        "message": "The operation has been successful",
+        "data": {
+            "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODhkYTY0ZWM1YWQ5ZWZlNTIxYmQyYjYiLCJpYXQiOjE3NTUzMjA0NjMsImV4cCI6MTc1NTkyNTI2M30.s2CFhCCNKeUT6A9RqBMLL2tkI-z0YcgbHzS3XAhug8M"
+        }
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:01:32.721Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/connection/following"
+        },
+        "message": "Following fetched",
+        "data": []
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:01:39.092Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/connection/followers"
+        },
+        "message": "Followers fetched",
+        "data": {
+            "followers": [
+                {
+                    "id": "688e4151c5ad9efe521bd2c2",
+                    "followingId": "688da64ec5ad9efe521bd2b6",
+                    "status": "Accepted",
+                    "followerId": "688e40a7c5ad9efe521bd2c0",
+                    "follower": {
+                        "username": "test_username",
+                        "profilePic": "https://example.com/profile-pic.jpg",
+                        "userId": "688e40a7c5ad9efe521bd2c0"
+                    }
+                }
+            ],
+            "pagination": {
+                "currentPage": 1,
+                "totalPages": 1,
+                "totalCount": 1,
+                "hasNext": false,
+                "hasPrev": false,
+                "limit": 10
+            }
+        }
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T05:03:49.118Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T05:03:49.122Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:04:19.014Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "POST",
+            "url": "/v1/connection/follow/688e40a7c5ad9efe521bd2c0"
+        },
+        "message": "Follow request sent",
+        "data": null
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:05:13.088Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/connection/following"
+        },
+        "message": "Following fetched",
+        "data": []
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T05:06:02.884Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T05:06:02.888Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T05:07:00.669Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T05:07:00.673Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:07:04.803Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/connection/get-user-followers/688da64ec5ad9efe521bd2b6"
+        },
+        "message": "Followers fetched",
+        "data": [
+            {
+                "id": "688e4151c5ad9efe521bd2c2",
+                "followingId": "688da64ec5ad9efe521bd2b6",
+                "status": "Accepted",
+                "followerId": "688e40a7c5ad9efe521bd2c0",
+                "follower": {
+                    "username": "test_username",
+                    "profilePic": "https://example.com/profile-pic.jpg",
+                    "userId": "688e40a7c5ad9efe521bd2c0"
+                }
+            }
+        ]
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T05:07:53.785Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T05:07:53.790Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:08:05.636Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/connection/get-user-followers/688da64ec5ad9efe521bd2b6"
+        },
+        "message": "Followers fetched",
+        "data": [
+            {
+                "follower": {
+                    "username": "test_username",
+                    "profilePic": "https://example.com/profile-pic.jpg",
+                    "userId": "688e40a7c5ad9efe521bd2c0"
+                }
+            }
+        ]
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T05:09:47.442Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T05:09:47.447Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T05:10:43.986Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T05:10:43.993Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T05:11:12.824Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T05:11:12.833Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:11:25.761Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/connection/get-user-followers/688da64ec5ad9efe521bd2b6"
+        },
+        "message": "Followers fetched",
+        "data": {
+            "followers": [
+                {
+                    "follower": {
+                        "username": "test_username",
+                        "profilePic": "https://example.com/profile-pic.jpg",
+                        "userId": "688e40a7c5ad9efe521bd2c0"
+                    }
+                }
+            ],
+            "pagination": {
+                "currentPage": 1,
+                "totalPages": 1,
+                "totalCount": 1,
+                "hasNext": false,
+                "hasPrev": false,
+                "limit": 10
+            }
+        }
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:11:43.322Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/connection/get-user-following/688da64ec5ad9efe521bd2b6"
+        },
+        "message": "Following fetched",
+        "data": {
+            "following": [],
+            "pagination": {
+                "currentPage": 1,
+                "totalPages": 0,
+                "totalCount": 0,
+                "hasNext": false,
+                "hasPrev": false,
+                "limit": 10
+            }
+        }
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T05:14:26.531Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T05:14:26.536Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:14:32.512Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/connection/get-user-followers/688da64ec5ad9efe521bd2b6"
+        },
+        "message": "Followers fetched",
+        "data": {
+            "followers": [
+                {
+                    "follower": {
+                        "username": "test_username",
+                        "name": "John Doe",
+                        "profilePic": "https://example.com/profile-pic.jpg",
+                        "userId": "688e40a7c5ad9efe521bd2c0"
+                    }
+                }
+            ],
+            "pagination": {
+                "currentPage": 1,
+                "totalPages": 1,
+                "totalCount": 1,
+                "hasNext": false,
+                "hasPrev": false,
+                "limit": 10
+            }
+        }
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:15:14.892Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/connection/following"
+        },
+        "message": "Following fetched",
+        "data": {
+            "following": [],
+            "pagination": {
+                "currentPage": 1,
+                "totalPages": 0,
+                "totalCount": 0,
+                "hasNext": false,
+                "hasPrev": false,
+                "limit": 10
+            }
+        }
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:15:20.081Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/connection/followers"
+        },
+        "message": "Followers fetched",
+        "data": {
+            "followers": [
+                {
+                    "follower": {
+                        "username": "test_username",
+                        "name": "John Doe",
+                        "profilePic": "https://example.com/profile-pic.jpg",
+                        "userId": "688e40a7c5ad9efe521bd2c0"
+                    }
+                }
+            ],
+            "pagination": {
+                "currentPage": 1,
+                "totalPages": 1,
+                "totalCount": 1,
+                "hasNext": false,
+                "hasPrev": false,
+                "limit": 10
+            }
+        }
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:19:26.064Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/story/get"
+        },
+        "message": "The operation has been successful",
+        "data": []
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:21:45.090Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "POST",
+            "url": "/v1/auth/login"
+        },
+        "message": "The operation has been successful",
+        "data": {
+            "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODJmM2IwOGM1YWQ5ZWZlNTIxYmQyYTUiLCJpYXQiOjE3NTUzMjE3MDUsImV4cCI6MTc1NTkyNjUwNX0.iArgeRgCw5B2s0fvfbdy-Qk6b9pTB1bSGPbQwAO2Wtw"
+        }
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:22:03.961Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/profile/get-profile"
+        },
+        "message": "The operation has been successful",
+        "data": {
+            "email": "harsh2@gmail.com",
+            "profile": {
+                "id": "682f3b08c5ad9efe521bd2a6",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "username": "Harsh",
+                "name": "John Doe",
+                "bio": "Full Stack Developer | Tech Enthusiast",
+                "dateofBirth": "1995-08-15T00:00:00.000Z",
+                "website": "https://johndoe.dev",
+                "profilePic": "https://example.com/profile-pic.jpg",
+                "address": null,
+                "type": "Public",
+                "createdAt": "2025-05-22T14:56:08.051Z",
+                "updatedAt": "2025-06-17T13:27:22.608Z",
+                "_count": {
+                    "followers": 1,
+                    "following": 1,
+                    "totalViews": 0,
+                    "totalLikes": 0
+                }
+            }
+        }
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:22:23.602Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/story/get"
+        },
+        "message": "The operation has been successful",
+        "data": []
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T05:22:57.920Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T05:22:57.924Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:23:01.604Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/story/get"
+        },
+        "message": "The operation has been successful",
+        "data": [
+            {
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "username": "Harsh",
+                "profilePic": "https://example.com/profile-pic.jpg",
+                "stories": []
+            },
+            {
+                "userId": "683d40a9c5ad9efe521bd2a7",
+                "username": "user2354",
+                "profilePic": null,
+                "stories": []
+            }
+        ]
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T05:29:42.142Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T05:29:42.148Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T05:29:53.226Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T05:29:53.234Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:30:29.183Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/story/get"
+        },
+        "message": "The operation has been successful",
+        "data": [
+            {
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "username": "Harsh",
+                "profilePic": "https://example.com/profile-pic.jpg",
+                "stories": []
+            },
+            {
+                "userId": "683d40a9c5ad9efe521bd2a7",
+                "username": "user2354",
+                "profilePic": null,
+                "stories": []
+            }
+        ]
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:30:37.777Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/story/get"
+        },
+        "message": "The operation has been successful",
+        "data": [
+            {
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "username": "Harsh",
+                "profilePic": "https://example.com/profile-pic.jpg",
+                "stories": []
+            },
+            {
+                "userId": "683d40a9c5ad9efe521bd2a7",
+                "username": "user2354",
+                "profilePic": null,
+                "stories": []
+            }
+        ]
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T05:30:53.260Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T05:30:53.265Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:30:55.938Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/story/get"
+        },
+        "message": "The operation has been successful",
+        "data": [
+            {
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "username": "Harsh",
+                "profilePic": "https://example.com/profile-pic.jpg",
+                "stories": []
+            },
+            {
+                "userId": "683d40a9c5ad9efe521bd2a7",
+                "username": "user2354",
+                "profilePic": null,
+                "stories": []
+            }
+        ]
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T05:32:02.003Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T05:32:02.009Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:32:19.199Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/story/get"
+        },
+        "message": "The operation has been successful",
+        "data": {
+            "stories": [],
+            "pagination": {
+                "currentPage": 1,
+                "totalPages": 0,
+                "totalCount": 0,
+                "hasNext": false,
+                "hasPrev": false,
+                "limit": 20
+            }
+        }
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:39:35.615Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "POST",
+            "url": "/v1/auth/login"
+        },
+        "message": "The operation has been successful",
+        "data": {
+            "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODhkYTY0ZWM1YWQ5ZWZlNTIxYmQyYjYiLCJpYXQiOjE3NTUzMjI3NzUsImV4cCI6MTc1NTkyNzU3NX0.NYHFGaL1s-VpdO2JjI4MLIRaPJ-9Uub9VhaoNk4696I"
+        }
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:39:54.127Z",
+    "meta": {
+        "success": true,
+        "statusCode": 201,
+        "request": {
+            "ip": "::1",
+            "method": "POST",
+            "url": "/v1/story/create"
+        },
+        "message": "The operation has been successful",
+        "data": null
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:40:07.579Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "POST",
+            "url": "/v1/auth/login"
+        },
+        "message": "The operation has been successful",
+        "data": {
+            "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2ODhlNDBhN2M1YWQ5ZWZlNTIxYmQyYzAiLCJpYXQiOjE3NTUzMjI4MDcsImV4cCI6MTc1NTkyNzYwN30.qqA0-DB6o-gXpGk_c98F-ljHfGZu8DEOZpEj7qrkAik"
+        }
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:40:20.984Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/story/get"
+        },
+        "message": "The operation has been successful",
+        "data": {
+            "stories": [
+                {
+                    "userId": "688da64ec5ad9efe521bd2b6",
+                    "username": "user1234",
+                    "profilePic": null,
+                    "stories": [
+                        {
+                            "id": "68a019a92b7a694cf3c249e8",
+                            "userId": "688da64ec5ad9efe521bd2b6",
+                            "mediaUrl": "https://ik.imagekit.io/abbsumfdi/uploads/Screenshot_from_2025-04-02_19-00-59_UeKXkPG4N.png",
+                            "mediaType": "Image",
+                            "createdAt": "2025-08-16T05:39:53.962Z",
+                            "expiresAt": "2025-08-17T05:39:53.960Z"
+                        }
+                    ]
+                }
+            ],
+            "pagination": {
+                "currentPage": 1,
+                "totalPages": 1,
+                "totalCount": 1,
+                "hasNext": false,
+                "hasPrev": false,
+                "limit": 20
+            }
+        }
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T05:41:04.539Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/story/get"
+        },
+        "message": "The operation has been successful",
+        "data": {
+            "stories": [
+                {
+                    "userId": "688da64ec5ad9efe521bd2b6",
+                    "username": "user1234",
+                    "profilePic": null,
+                    "stories": [
+                        {
+                            "id": "68a019a92b7a694cf3c249e8",
+                            "userId": "688da64ec5ad9efe521bd2b6",
+                            "mediaUrl": "https://ik.imagekit.io/abbsumfdi/uploads/Screenshot_from_2025-04-02_19-00-59_UeKXkPG4N.png",
+                            "mediaType": "Image",
+                            "createdAt": "2025-08-16T05:39:53.962Z",
+                            "expiresAt": "2025-08-17T05:39:53.960Z"
+                        }
+                    ]
+                }
+            ],
+            "pagination": {
+                "currentPage": 1,
+                "totalPages": 1,
+                "totalCount": 1,
+                "hasNext": false,
+                "hasPrev": false,
+                "limit": 20
+            }
+        }
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T05:41:50.008Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T05:41:50.013Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T06:12:02.469Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T06:12:02.477Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T06:23:51.947Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T06:23:51.952Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T06:24:09.638Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T06:24:09.644Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T06:25:02.535Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T06:25:02.539Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T06:26:12.284Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/profile/get-content"
+        },
+        "message": "The operation has been successful",
+        "data": {
+            "content": [
+                {
+                    "id": "68516d4cc5ad9efe521bd2b0",
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "text": "hellocheck2",
+                    "visibility": "Public",
+                    "views": 0,
+                    "shares": 0,
+                    "createdAt": "2025-06-17T13:27:40.923Z",
+                    "updatedAt": "2025-06-17T13:27:40.923Z",
+                    "media": [
+                        {
+                            "id": "68516d4cc5ad9efe521bd2b1",
+                            "postId": "68516d4cc5ad9efe521bd2b0",
+                            "type": "Image",
+                            "url": "https://ik.imagekit.io/abbsumfdi/uploads/Screenshot_from_2025-04-02_19-00-59_UeKXkPG4N.png",
+                            "createdAt": "2025-06-17T13:27:40.923Z"
+                        }
+                    ],
+                    "user": {
+                        "username": "Harsh",
+                        "profilePic": "https://example.com/profile-pic.jpg",
+                        "userId": "682f3b08c5ad9efe521bd2a5"
+                    },
+                    "_count": {
+                        "likes": 0,
+                        "comments": 0
+                    },
+                    "contentType": "post"
+                }
+            ],
+            "pagination": {
+                "currentPage": 1,
+                "totalPages": 1,
+                "totalCount": 1,
+                "hasNext": false,
+                "hasPrev": false,
+                "limit": 10
+            }
+        }
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T06:40:37.495Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T06:40:37.501Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T06:41:11.748Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T06:41:11.752Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T06:41:29.242Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T06:41:29.249Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T06:42:32.659Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T06:42:32.664Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T06:43:48.934Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T06:43:48.940Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T06:44:21.490Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T06:44:21.494Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T06:45:07.179Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T06:45:07.184Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T06:46:48.761Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T06:46:48.765Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T06:48:06.113Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T06:48:06.118Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-16T06:49:09.159Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-16T06:49:09.163Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T06:50:03.546Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/post/get-user-posts"
+        },
+        "message": "The operation has been successful",
+        "data": {
+            "post": [
+                {
+                    "id": "68516d4cc5ad9efe521bd2b0",
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "text": "hellocheck2",
+                    "visibility": "Public",
+                    "views": 0,
+                    "shares": 0,
+                    "createdAt": "2025-06-17T13:27:40.923Z",
+                    "updatedAt": "2025-06-17T13:27:40.923Z",
+                    "media": [
+                        {
+                            "id": "68516d4cc5ad9efe521bd2b1",
+                            "postId": "68516d4cc5ad9efe521bd2b0",
+                            "type": "Image",
+                            "url": "https://ik.imagekit.io/abbsumfdi/uploads/Screenshot_from_2025-04-02_19-00-59_UeKXkPG4N.png",
+                            "createdAt": "2025-06-17T13:27:40.923Z"
+                        }
+                    ],
+                    "user": {
+                        "username": "Harsh",
+                        "profilePic": "https://example.com/profile-pic.jpg",
+                        "userId": "682f3b08c5ad9efe521bd2a5"
+                    },
+                    "_count": {
+                        "likes": 0,
+                        "comments": 0
+                    }
+                }
+            ],
+            "pagination": {
+                "currentPage": 1,
+                "totalPages": 1,
+                "totalCount": 1,
+                "hasNext": false,
+                "hasPrev": false,
+                "limit": 20
+            }
+        }
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T06:51:22.385Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/clip/get-user-clips"
+        },
+        "message": "The operation has been successful",
+        "data": {
+            "clips": [],
+            "pagination": {
+                "currentPage": 1,
+                "totalPages": 0,
+                "totalCount": 0,
+                "hasNext": false,
+                "hasPrev": false,
+                "limit": 20
+            }
+        }
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-16T06:52:03.945Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/post/get-user-text-posts"
+        },
+        "message": "The operation has been successful",
+        "data": {
+            "posts": [],
+            "pagination": {
+                "currentPage": 1,
+                "totalPages": 0,
+                "totalCount": 0,
+                "hasNext": false,
+                "hasPrev": false,
+                "limit": 20
+            }
+        }
+    }
+}
