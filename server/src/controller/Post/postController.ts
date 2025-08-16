@@ -34,7 +34,7 @@ export default {
                     
                 }
 
-                if (safeFiles.length === 0) {
+                if (urls.length !== 0 && safeFiles.length === 0) {
                     return httpError(next, new Error('All media files were rejected due to NSFW content.'), req, 400);
                 }
             }
@@ -299,7 +299,6 @@ export default {
                         ]
                     },
                     include: {
-                        media: true,
                         user: {
                             select: {
                                 username: true,
