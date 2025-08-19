@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -7,12 +6,14 @@ import {
   TouchableOpacity,
   FlatList,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "expo-router";
 import ScreenWrapper from "@/components/common/ScreenWrapper";
-import { getFollowers } from "@/api/memberService";
+import { getFollowers, getFollowing } from "@/api/memberService";
+import SearchBar from "@/components/searchbar/SearchBar";
 
 interface Member {
   id: string;
@@ -23,55 +24,106 @@ interface Member {
 
 const ProfileSearch = () => {
   const [activeTab, setActiveTab] = useState<"Members" | "Following">("Members");
+
+
   const [membersData, setMembersData] = useState<Member[]>([]);
+  const [membersPage, setMembersPage] = useState(1);
+  const [membersHasNext, setMembersHasNext] = useState(true);
+
   const [followingData, setFollowingData] = useState<Member[]>([]);
+  const [followingPage, setFollowingPage] = useState(1);
+  const [followingHasNext, setFollowingHasNext] = useState(true);
+
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const navigation = useNavigation();
 
-  const fetchMembers = async () => {
-    setLoading(true);
-    try {
-      const data = await getFollowers(1);
-      const formattedMembers: Member[] = data.data.followers.map((f) => ({
-        id: f.follower.userId,
-        name: f.follower.name,
-        username: f.follower.username,
-        avatar: f.follower.profilePic || "https://via.placeholder.com/45",
-      }));
-      setMembersData(formattedMembers);
-    } catch (err) {
-      console.error("Error fetching members:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
+  const fetchMembers = useCallback(
+    async (page: number = 1, search: string = "", append: boolean = false) => {
+      if (loading || loadingMore) return;
+      page === 1 ? setLoading(true) : setLoadingMore(true);
 
-  const fetchFollowing = async () => {
-    setLoading(true);
-    try {
-      const formattedFollowing: Member[] = [].map((f: any) => ({
-        id: f.userId,
-        name: f.name,
-        username: f.username,
-        avatar: f.profilePic || "https://via.placeholder.com/45",
-      }));
-      setFollowingData(formattedFollowing);
-    } catch (err) {
-      console.error("Error fetching following:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      try {
+        const data = await getFollowers(page, 10, search);
+        const formatted: Member[] = data.data.followers.map((f: any) => ({
+          id: f.follower.userId,
+          name: f.follower.name,
+          username: f.follower.username,
+          avatar: f.follower.profilePic || "https://via.placeholder.com/45",
+        }));
+
+        setMembersData(append ? [...membersData, ...formatted] : formatted);
+        setMembersPage(data.data.pagination.currentPage); 
+        setMembersHasNext(data.data.pagination.hasNext); 
+      } catch (err) {
+        console.error("Error fetching members:", err);
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    },
+    [membersData, loading, loadingMore]
+  );
+
+ 
+  const fetchFollowing = useCallback(
+    async (page: number = 1, search: string = "", append: boolean = false) => {
+      if (loading || loadingMore) return;
+      page === 1 ? setLoading(true) : setLoadingMore(true);
+
+      try {
+        const data = await getFollowing(page, 10, search);
+        const formatted: Member[] = data.data.following.map((f: any) => ({
+          id: f.following.userId,
+          name: f.following.name,
+          username: f.following.username,
+          avatar: f.following.profilePic || "https://via.placeholder.com/45",
+        }));
+
+        setFollowingData(append ? [...followingData, ...formatted] : formatted);
+        setFollowingPage(data.data.pagination.currentPage);
+        setFollowingHasNext(data.data.pagination.hasNext);
+      } catch (err) {
+        console.error("Error fetching following:", err);
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    },
+    [followingData, loading, loadingMore]
+  );
+
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      if (activeTab === "Members") {
+        fetchMembers(1, searchQuery, false);
+      } else {
+        fetchFollowing(1, searchQuery, false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, activeTab]);
+
+  const handleSearchSubmit = () => {
     if (activeTab === "Members") {
-      fetchMembers();
+      fetchMembers(1, searchQuery, false);
     } else {
-      fetchFollowing();
+      fetchFollowing(1, searchQuery, false);
     }
-  }, [activeTab]);
+  };
+
+  const handleLoadMore = () => {
+    if (activeTab === "Members" && membersHasNext) {
+      fetchMembers(membersPage + 1, searchQuery, true);
+    } else if (activeTab === "Following" && followingHasNext) {
+      fetchFollowing(followingPage + 1, searchQuery, true);
+    }
+  };
 
   const renderItem = ({ item }: { item: Member }) => (
     <View style={styles.memberRow}>
@@ -91,6 +143,7 @@ const ProfileSearch = () => {
   return (
     <ScreenWrapper gradient>
       <View style={styles.container}>
+  
         <LinearGradient
           colors={["#FFF7D2", "rgba(86, 55, 158, 0.34)"]}
           start={{ x: 0, y: 0 }}
@@ -106,6 +159,16 @@ const ProfileSearch = () => {
           </TouchableOpacity>
         </LinearGradient>
 
+        <View style={styles.searchContainer}>
+          <SearchBar
+            placeholder="Search profiles..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onSubmitEditing={handleSearchSubmit}
+          />
+        </View>
+
+       
         <View style={styles.tabContainer}>
           {["Members", "Following"].map((tab) => (
             <TouchableOpacity
@@ -121,11 +184,19 @@ const ProfileSearch = () => {
           ))}
         </View>
 
-        {loading ? (
-          <Text style={{ textAlign: "center", marginTop: 20 }}>Loading...</Text>
+        {/* List */}
+        {loading && dataToShow.length === 0 ? (
+          <ActivityIndicator size="large" style={{ marginTop: 20 }} />
         ) : dataToShow.length === 0 ? (
-          <Text style={{ textAlign: "center", marginTop: 20, fontSize: 16, color: "#666" }}>
-            No data available
+          <Text
+            style={{
+              textAlign: "center",
+              marginTop: 20,
+              fontSize: 16,
+              color: "#666",
+            }}
+          >
+            No {activeTab.toLowerCase()} found
           </Text>
         ) : (
           <FlatList
@@ -133,6 +204,11 @@ const ProfileSearch = () => {
             keyExtractor={(item) => item.id}
             renderItem={renderItem}
             showsVerticalScrollIndicator={false}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              loadingMore ? <ActivityIndicator style={{ marginVertical: 20 }} /> : null
+            }
           />
         )}
       </View>
@@ -150,6 +226,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 12,
     paddingHorizontal: 10,
+  },
+  searchContainer: {
+    paddingHorizontal: 15,
+    paddingVertical: 10,
   },
   headerTitle: { fontSize: 18, fontWeight: "600" },
   tabContainer: { flexDirection: "row", marginBottom: 10 },
