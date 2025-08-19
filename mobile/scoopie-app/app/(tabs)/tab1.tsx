@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, } from 'react';
 import {
   FlatList,
   Image,
@@ -16,29 +16,13 @@ import Header from '../../components/home/Header';
 import ScreenWrapper from '../../components/common/ScreenWrapper';
 import { getAddedFeeds, getPostFeeds } from '@/api/feedService';
 import { PostFeed } from '@/models/PostfeedModel';
+import { UserStory } from '@/models/StoryModel';
+import { getStories } from '@/api/storyService';
+import StoryViewer from '../storyViewer';
 
 const screenWidth = Dimensions.get('window').width;
 const CARD_WIDTH = screenWidth / 2 - 20;
 
-interface FeedItem {
-    id: string;
-    type: 'text' | 'video' | 'image';
-    user: string;
-    avatar: string;
-    content: string;
-    image?: string;
-}
-
-
-const DUMMY_FEED: FeedItem[] = new Array(10).fill(0).map((_, i) => ({
-    id: `feed_${i}`,
-    type: i % 3 === 0 ? 'text' : i % 2 === 0 ? 'video' : 'image',
-    user: ['Ann', 'Jake', 'Rose', 'Jenny', 'David'][i % 5],
-    avatar: `https://randomuser.me/api/portraits/${i % 2 === 0 ? 'men' : 'women'}/${i + 10}.jpg`,
-    content:
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-    image: 'https://images.unsplash.com/photo-1600880292089-90e6a4b9b9d5',
-}));
 export default function HomeScreen() {
   const [feedData, setFeedData] = useState<PostFeed[]>([]);
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -48,8 +32,13 @@ export default function HomeScreen() {
   const [page, setPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState<boolean>(true);
 
+
+  const [storyPage, setStoryPage] = useState<number>(1);
+  const [storyHasMore, setStoryHasMore] = useState<boolean>(true);
+  const [stories, setStories] = useState<UserStory[]>([]);
   useEffect(() => {
     loadData(1, true);
+    loadStories(1);
   }, [activeTab]);
 
   const loadData = async (pageNumber: number, isRefreshing = false) => {
@@ -95,6 +84,23 @@ export default function HomeScreen() {
   const handleLoadMore = () => {
     if (!loadingMore && hasMore && !loading) {
       loadData(page + 1);
+    }
+  };
+
+  const loadStories = async (pageNumber: number) => {
+    try {
+      const res = await getStories(pageNumber);
+      if (res?.data?.stories) {
+        if (pageNumber === 1) {
+          setStories(res.data.stories);
+        } else {
+          setStories((prev) => [...prev, ...res.data.stories]);
+        }
+        setStoryHasMore(res.data.pagination.hasNext);
+        setStoryPage(pageNumber);
+      }
+    } catch (error) {
+      console.error("Error fetching stories:", error);
     }
   };
 
@@ -152,52 +158,42 @@ export default function HomeScreen() {
     );
   };
 
-  const renderHeader = () => <Header />;
+  const renderHeader = () => {
+    return <>
+      <Header />
+      <StoryViewer />
+    </>
+
+  };
 
   return (
     <ScreenWrapper gradient>
       <View style={styles.container}>
         {renderHeader()}
-                         <View style={styles.storyWrapper}>
-                     <FlatList
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        data={DUMMY_FEED.slice(0, 6)}
-                        keyExtractor={(item) => item.id}
-                        style={styles.storyList}
-                        renderItem={({ item }) => (
-                            <View style={styles.storyItem}>
-                                 <Image source={{ uri: item.avatar }} style={styles.storyAvatar} />
-                                <Text style={styles.storyName}>{item.user}</Text>
-                            </View>
-                        )}
 
+        <View style={styles.tabContainer}>
+          {['hot', 'added'].map((tab) => (
+            <TouchableOpacity key={tab} onPress={() => setActiveTab(tab as 'hot' | 'added')} style={styles.tabButton}>
+              <Text style={[styles.tabText, activeTab === tab && styles.activeTab]}>
+                {tab === 'hot' ?
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                    <Image
+                      source={require('../../assets/icons/hotIcon.png')}
+                      style={{ width: 24, height: 24 }}
                     />
-             </View>
-
-         <View style={styles.tabContainer}>
-                     {['hot', 'added'].map((tab) => (
-                         <TouchableOpacity key={tab} onPress={() => setActiveTab(tab as 'hot' | 'added')} style={styles.tabButton}>
-                             <Text style={[styles.tabText, activeTab === tab && styles.activeTab]}>
-                                 {tab === 'hot' ?
-                                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                                         <Image
-                                             source={require('../../assets/icons/hotIcon.png')}
-                                             style={{ width: 24, height: 24 }}
-                                        />
-                                         <Text>Hot</Text>
-                                    </View> : <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-                                      <Image
-                                             source={require('../../assets/icons/addedIcon.png')}
-                                             style={{ width: 24, height: 24 }}
-                                         />
-                                        <Text>Added</Text>
-                                    </View>}
-                           </Text>
-                          {activeTab === tab && <View style={styles.underline} />}
-                     </TouchableOpacity>
-                   ))}
-                </View>
+                    <Text>Hot</Text>
+                  </View> : <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+                    <Image
+                      source={require('../../assets/icons/addedIcon.png')}
+                      style={{ width: 24, height: 24 }}
+                    />
+                    <Text>Added</Text>
+                  </View>}
+              </Text>
+              {activeTab === tab && <View style={styles.underline} />}
+            </TouchableOpacity>
+          ))}
+        </View>
 
         {renderContent()}
       </View>
@@ -206,126 +202,127 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: { backgroundColor: '#F2F2F2',flex:1,marginBottom:-100},
-    icon: { marginRight: 12 },
-    storyWrapper: {
-        paddingBottom: 10,
-        backgroundColor: 'white',
-    },
-    storyList: {
-        paddingVertical: 16,
-        paddingLeft: 12,
-    },
-    storyItem: {
-        alignItems: 'center',
-        marginRight: 16,
-    },
-    storyAvatar: {
-        width: 54,
-        height: 54,
-        borderRadius: 27,
-        marginBottom: 4,
-    },
-    storyName: {
-        fontSize: 12,
-        color: '#444',
-    },
-    tabContainer: {
-        flexDirection: 'row',
-        justifyContent: 'flex-start',
-        paddingTop: 6,
-        paddingBottom: 10,
-        paddingHorizontal: 16,
-        gap: 24,
-        backgroundColor: 'white',
-        marginBottom: 16
-    },
-    tabButton: {
-        alignItems: 'center',
-    },
-    tabText: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: 'black',
-    },
-    activeTab: {
-        color: '#000',
-    },
-    underline: {
-        marginTop: 4,
-        height: 2,
-        width: '100%',
-        backgroundColor: '#8e44ad',
-        borderRadius: 2,
-    },
-    profileSection: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 6,
-        paddingLeft: 4,
-    },
-    avatarLarge: {
-        width: 30,
-        height: 30,
-        borderRadius: 15,
-        marginRight: 8,
-        backgroundColor:'black'
-    },
-    usernameLarge: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#222',
-    },
-    card: {
-        backgroundColor: '#fff',
-        width: CARD_WIDTH,
-        borderRadius: 12,
-        overflow: 'hidden',
-        shadowColor: '#000',
-        shadowOpacity: 0.04,
-        shadowOffset: { width: 0, height: 2 },
-        shadowRadius: 6,
-        elevation: 2,
-    },
-    cardImage: {
-        width: '100%',
-        height: 200,
-        resizeMode:'cover'
-    },
-    playIconOverlay: {
-        position: 'absolute',
-        top: 50,
-        left: '42%',
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        borderRadius: 20,
-        padding: 6,
-    },
-    playIcon: {
-        color: '#fff',
-        fontSize: 20,
-    },
-    textCard: {
-        height: 'auto'
-    },
-    textContent: {
-        fontSize: 14,
-        color: '#333',
-        margin: 8
-    },
-    cardSkeletonRow: {
-        justifyContent: 'space-between',
-        paddingHorizontal: 12,
-        marginBottom: 12,
-        gap:10
-    },
-    cardSkeleton: {
-        backgroundColor: '#E0E0E0',
-        borderRadius: 12,
-    },
-    columnWrapper: {
-        justifyContent: 'space-between',
-        paddingHorizontal: 8,
-        flexDirection:'column'
-    },
+  container: { backgroundColor: '#F2F2F2', flex: 1, marginBottom: -50 },
+  icon: { marginRight: 12 },
+  storyWrapper: {
+    paddingBottom: 10,
+    backgroundColor: '#eee',
+  },
+  storyList: {
+    paddingVertical: 16,
+    paddingLeft: 12,
+  },
+  storyItem: {
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  storyAvatar: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    marginBottom: 4,
+    backgroundColor: '#eee'
+  },
+  storyName: {
+    fontSize: 12,
+    color: '#444',
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    paddingTop: 6,
+    paddingBottom: 10,
+    paddingHorizontal: 16,
+    gap: 24,
+    backgroundColor: 'white',
+    marginBottom: 16
+  },
+  tabButton: {
+    alignItems: 'center',
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: 'black',
+  },
+  activeTab: {
+    color: '#000',
+  },
+  underline: {
+    marginTop: 4,
+    height: 2,
+    width: '100%',
+    backgroundColor: '#8e44ad',
+    borderRadius: 2,
+  },
+  profileSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+    paddingLeft: 4,
+  },
+  avatarLarge: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    marginRight: 8,
+    backgroundColor: '#eee'
+  },
+  usernameLarge: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#222',
+  },
+  card: {
+    backgroundColor: '#fff',
+    width: CARD_WIDTH,
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  cardImage: {
+    width: '100%',
+    height: 200,
+    resizeMode: 'cover'
+  },
+  playIconOverlay: {
+    position: 'absolute',
+    top: 50,
+    left: '42%',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 20,
+    padding: 6,
+  },
+  playIcon: {
+    color: '#fff',
+    fontSize: 20,
+  },
+  textCard: {
+    height: 'auto'
+  },
+  textContent: {
+    fontSize: 14,
+    color: '#333',
+    margin: 8
+  },
+  cardSkeletonRow: {
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    marginBottom: 12,
+    gap: 10
+  },
+  cardSkeleton: {
+    backgroundColor: '#E0E0E0',
+    borderRadius: 12,
+  },
+  columnWrapper: {
+    justifyContent: 'space-between',
+    paddingHorizontal: 8,
+    flexDirection: 'column'
+  },
 });
 

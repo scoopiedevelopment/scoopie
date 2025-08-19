@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -16,18 +16,65 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import ScreenWrapper from "@/components/common/ScreenWrapper";
+import VideoPreview from "@/components/common/VideoPreview";
+import { useRouter } from "expo-router";
+import { createClip, createPost } from "@/api/uploadService";
+import { getProfile } from "@/api/profileService";
 
 export default function SecondScreen() {
-  const { mediaUris } = useLocalSearchParams<{ mediaUris: string }>();
-  const decodedUris = mediaUris ? JSON.parse(decodeURIComponent(mediaUris)) : [];
 
   const navigation = useNavigation();
   const [postText, setPostText] = useState("");
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const { uploadedImageUrls, uploadedVideoUrl } = useLocalSearchParams<{
+    uploadedImageUrls?: string;
+    uploadedVideoUrl?: string;
+  }>();
+  const router = useRouter();
 
-  const handlePost = () => {
-    console.log("Text:", postText);
-    console.log("Images:", decodedUris);
+  const imageUrls = uploadedImageUrls
+    ? JSON.parse(decodeURIComponent(uploadedImageUrls))
+    : [];
+
+
+  const videoUrl = uploadedVideoUrl ? decodeURIComponent(uploadedVideoUrl) : null;
+  const combinedData = [
+    ...(imageUrls || []),
+    ...(videoUrl ? [videoUrl] : []),
+  ];
+
+  const handlePost = async () => {
+    try {
+      if (videoUrl) {
+        const result = await createClip(videoUrl, postText || "");
+      }
+
+      if (imageUrls.length > 0) {
+        const result = await createPost(imageUrls, postText || "");
+      }
+
+      router.replace("/(tabs)/tab1");
+    } catch (error) {
+      console.error("Error while posting ❌:", error);
+    }
   };
+
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const data = await getProfile();
+        setProfile(data);
+      } catch (error) {
+        console.error("Profile fetch error ❌:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile(); 
+  }, []);
 
   return (
     <ScreenWrapper gradient>
@@ -56,17 +103,18 @@ export default function SecondScreen() {
 
         <View style={styles.mainContent}>
           <View style={styles.userRow}>
+
             <Image
               source={{
-                uri: "https://randomuser.me/api/portraits/women/44.jpg",
+                uri: profile?.data?.profile?.profilePic,
               }}
               style={styles.avatar}
             />
             <View>
-              <Text style={styles.userName}>Jenny Wilson</Text>
+              <Text style={styles.userName}>{profile?.data?.profile?.username}</Text>
               <View style={styles.publicRow}>
                 <Ionicons name="earth" size={14} color="gray" />
-                <Text style={styles.publicText}> Public</Text>
+                <Text style={styles.publicText}> {profile?.data?.profile?.type}</Text>
               </View>
             </View>
           </View>
@@ -81,25 +129,23 @@ export default function SecondScreen() {
             />
           </ScrollView>
         </View>
-
-        {decodedUris.length > 0 && (
-          <View style={styles.bottomImages}>
-            <FlatList
-              data={decodedUris}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              keyExtractor={(_, index) => index.toString()}
-              renderItem={({ item }) => (
-                <Image
-                  source={{ uri: item }}
-                  style={styles.previewImage}
-                />
-              )}
-              contentContainerStyle={{ paddingHorizontal: 15 }}
-            />
-          </View>
-
-        )}
+        <View style={styles.bottomImages}>
+          <FlatList
+            data={combinedData}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(_, index) => index.toString()}
+            renderItem={({ item, index }) => {
+              const isVideo = videoUrl && item === videoUrl;
+              return isVideo ? (
+                <VideoPreview uri={item} />
+              ) : (
+                <Image source={{ uri: item }} style={styles.previewImage} />
+              );
+            }}
+            contentContainerStyle={{ paddingHorizontal: 15 }}
+          />
+        </View>
       </KeyboardAvoidingView>
     </ScreenWrapper>
   );
@@ -131,7 +177,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 12,
   },
-  avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10 },
+  avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10, backgroundColor: '#eee' },
   userName: { fontWeight: "600", fontSize: 16 },
   publicRow: { flexDirection: "row", alignItems: "center" },
   publicText: { color: "gray", fontSize: 12 },

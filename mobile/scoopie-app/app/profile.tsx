@@ -39,6 +39,11 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
 
 
+  const [textPosts, setTextPosts] = useState<Post[]>([]);
+  const [textPage, setTextPage] = useState(1);
+  const [textLoading, setTextLoading] = useState(false);
+  const [hasMoreTextPosts, setHasMoreTextPosts] = useState(true);
+
   const fetchProfileData = async () => {
     try {
       const data = await getProfile();
@@ -68,22 +73,22 @@ export default function ProfileScreen() {
       setPostLoading(false);
     }
   };
+
   const fetchTextPosts = async (page: number = 1) => {
-    if (postLoading || !hasMorePosts) return;
-    setPostLoading(true);
+    if (textLoading || !hasMoreTextPosts) return;
+    setTextLoading(true);
     try {
       const response = await getUserTextPosts(page);
-
       const newPosts = response.data.posts;
       const pagination = response.data.pagination;
 
-      setPosts((prev) => (page === 1 ? newPosts : [...prev, ...newPosts]));
-      setHasMorePosts(pagination.hasNext);
-      setPostPage(page);
+      setTextPosts((prev) => (page === 1 ? newPosts : [...prev, ...newPosts]));
+      setHasMoreTextPosts(pagination.hasNext);
+      setTextPage(page);
     } catch (error) {
       console.error("Failed to load text posts:", error);
     } finally {
-      setPostLoading(false);
+      setTextLoading(false);
     }
   };
 
@@ -114,18 +119,10 @@ export default function ProfileScreen() {
   }, [activeTab]);
 
   const renderPhoto = ({ item }: { item: Post }) => {
-    console.log("item phto", item);
 
-    if (!item.media || item.media.length === 0) {
-      return (
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-          <Text style={{ color: "grey", fontSize: 18 }}>No Image</Text>
-        </View>
-      );
-    }
     return (
       <View style={styles.postBox}>
-        <Image source={{ uri: item.media[0].url }} style={styles.postImage} />
+        <Image source={{ uri: item?.media[0]?.url }} style={styles.postImage} />
       </View>
     );
   };
@@ -169,11 +166,10 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           ))}
         </View>
-
         {activeTab === 'Text' ? (
           <FlatList
             key="text"
-            data={posts}
+            data={textPosts}
             renderItem={({ item }) => (
               <TextCard
                 avatar={item.user?.profilePic}
@@ -190,73 +186,74 @@ export default function ProfileScreen() {
             contentContainerStyle={{ paddingBottom: 100, marginTop: 10, paddingHorizontal: 20 }}
             showsVerticalScrollIndicator={false}
             onEndReached={() => {
-              if (hasMorePosts && !postLoading) {
-                fetchTextPosts(postPage + 1);
+              if (hasMoreTextPosts && !textLoading) {
+                fetchTextPosts(textPage + 1);
               }
             }}
             onEndReachedThreshold={0.5}
             ListFooterComponent={
-              postLoading ? (
+              textLoading ? (
                 <ActivityIndicator size="small" color="#7B4DFF" style={{ margin: 10 }} />
               ) : null
             }
             ListEmptyComponent={
-              !postLoading ? (
+              !textLoading ? (
                 <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
                   <Text style={{ color: "grey", fontSize: 16 }}>No text posts available</Text>
                 </View>
               ) : null
             }
-
           />
-        ) : activeTab === 'Clips' ? (
-          clipLoading ? (
-            <ActivityIndicator size="large" color="#7B4DFF" style={{ marginTop: 20 }} />
+        )
+          : activeTab === 'Clips' ? (
+            clipLoading ? (
+              <ActivityIndicator size="large" color="#7B4DFF" style={{ marginTop: 20 }} />
+            ) : (
+              <FlatList
+                key="clips"
+                data={clips}
+                renderItem={renderClip}
+                keyExtractor={(item) => item.id}
+                numColumns={3}
+                columnWrapperStyle={{ paddingHorizontal: 20, gap: 10 }}
+                contentContainerStyle={{ paddingBottom: 100, marginTop: 10 }}
+                showsVerticalScrollIndicator={false}
+              />
+            )
           ) : (
             <FlatList
-              key="clips"
-              data={clips}
-              renderItem={renderClip}
-              keyExtractor={(item) => item.id}
+              key="photos"
+              data={posts}
+              renderItem={renderPhoto}
+              keyExtractor={(item, index) => String(item?.id ?? index)}
               numColumns={3}
-              columnWrapperStyle={{ paddingHorizontal: 20, gap: 10 }}
-              contentContainerStyle={{ paddingBottom: 100, marginTop: 10 }}
+              columnWrapperStyle={{ justifyContent: "space-between", paddingHorizontal: 20 }}
+              contentContainerStyle={{ flexGrow: 1, paddingBottom: 100, marginTop: 10 }}
               showsVerticalScrollIndicator={false}
-            />
-          )
-        ) : (
-          <FlatList
-            key="photos"
-            data={posts}
-            renderItem={renderPhoto}
-            keyExtractor={(item, index) => String(item?.id ?? index)}
-            numColumns={3}
-            columnWrapperStyle={{ justifyContent: "space-between", paddingHorizontal: 20 }}
-            contentContainerStyle={{ flexGrow: 1, paddingBottom: 100, marginTop: 10 }}
-            showsVerticalScrollIndicator={false}
-            onEndReached={() => {
-              if (hasMorePosts && !postLoading) {
-                fetchPosts(postPage + 1);
+              onEndReached={() => {
+                if (hasMorePosts && !postLoading) {
+                  fetchPosts(postPage + 1);
+                }
+              }}
+              onEndReachedThreshold={0.5}
+              ListFooterComponent={
+                postLoading ? (
+                  <ActivityIndicator size="small" color="#7B4DFF" style={{ margin: 10 }} />
+                ) : null
               }
-            }}
-            onEndReachedThreshold={0.5}
-            ListFooterComponent={
-              postLoading ? (
-                <ActivityIndicator size="small" color="#7B4DFF" style={{ margin: 10 }} />
-              ) : null
-            }
-            ListEmptyComponent={
-              <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-                <Text style={{ color: "grey", fontSize: 16 }}>No data available</Text>
-              </View>
-            }
-          />
+              ListEmptyComponent={
+                <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+                  <Text style={{ color: "grey", fontSize: 16 }}>No data available</Text>
+                </View>
+              }
+            />
 
-        )}
+          )}
       </View>
     </ScreenWrapper>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
@@ -296,7 +293,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 8,
-    backgroundColor: 'black'
+    backgroundColor: '#eee'
   },
   playIcon: {
     position: 'absolute',
