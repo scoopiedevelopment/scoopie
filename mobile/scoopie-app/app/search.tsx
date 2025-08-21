@@ -164,18 +164,17 @@ export default function SearchScreen() {
     />
   );
   const clearAllRecentSearches = async () => {
-  if (!loggedInUserId) return;
-  try {
-    const key = `recentSearches_${loggedInUserId}`;
-    await AsyncStorage.removeItem(key);
-    setRecentSearches([]); // UI ko bhi reset karo
-  } catch (err) {
-    console.log("Error clearing all recents:", err);
-  }
-};
+    if (!loggedInUserId) return;
+    try {
+      const key = `recentSearches_${loggedInUserId}`;
+      await AsyncStorage.removeItem(key);
+      setRecentSearches([]);
+    } catch (err) {
+      console.log("Error clearing all recents:", err);
+    }
+  };
 
 
-  // ✅ Clips render
   const renderClips = (clips: any[]) => (
     <FlatList
       key={"CLIPS"}
@@ -240,7 +239,6 @@ export default function SearchScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Search Bar */}
       <View style={styles.searchBar}>
         <TextInput
           placeholder="Search"
@@ -275,11 +273,11 @@ export default function SearchScreen() {
                   alignItems: "center",
                   justifyContent: "space-between",
                   paddingVertical: 10,
-                  paddingHorizontal:10,
+                  paddingHorizontal: 10,
                 }}
               >
                 <TouchableOpacity
-                  style={{ flexDirection: "row", alignItems: "center"}}
+                  style={{ flexDirection: "row", alignItems: "center" }}
                   onPress={() => {
                     setQuery(item);
                     fetchResults("Top", item);
@@ -288,7 +286,6 @@ export default function SearchScreen() {
                   <Text style={styles.username}>{item}</Text>
                 </TouchableOpacity>
 
-                {/* Delete icon */}
                 <TouchableOpacity onPress={() => deleteRecentSearch(item)}>
                   <Ionicons name="close" size={22} color="#000" />
                 </TouchableOpacity>
@@ -298,7 +295,7 @@ export default function SearchScreen() {
         </View>
       ) : (
         <>
-          {/* Tabs */}
+
           <View style={styles.tabs}>
             {TABS.map((tab) => (
               <TouchableOpacity
@@ -321,7 +318,6 @@ export default function SearchScreen() {
             ))}
           </View>
 
-          {/* Results */}
           {loading ? (
             <ActivityIndicator size="large" color="#8A2BE2" />
           ) : (
@@ -338,18 +334,21 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    paddingHorizontal: 12,
+
+
     marginBottom: 12,
+
+  },
+  input: {
+    flex: 1, height: 40, fontSize: 16, borderWidth: 1, borderColor: "#ddd",
     backgroundColor: "#fff",
     shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
+    borderRadius: 12,
+    paddingHorizontal: 12,
   },
-  input: { flex: 1, height: 40, fontSize: 16 },
   searchButton: {
     marginLeft: 8,
     paddingVertical: 6,
@@ -384,7 +383,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 10,
   },
-  profilePic: { width: 45, height: 45, borderRadius: 22, marginRight: 12,backgroundColor:'#eee' },
+  profilePic: {
+    width: 45,
+    height: 45,
+    borderRadius: 22,
+    marginRight: 12,
+    backgroundColor: '#eee'
+  },
   username: { fontSize: 15, fontWeight: "600", color: "#000" },
   followers: { fontSize: 13, color: "#888" },
   addButton: {
