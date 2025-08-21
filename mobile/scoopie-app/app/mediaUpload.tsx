@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import ScreenWrapper from "@/components/common/ScreenWrapper";
 import { VideoView, useVideoPlayer } from "expo-video";
+import { useIsFocused } from "@react-navigation/native";
 import { uploadClip, uploadImage } from "@/api/uploadService";
 
 const { width } = Dimensions.get("window");
@@ -26,10 +27,69 @@ type MediaItem = {
   type: "image" | "video";
 };
 
+const VideoPlayer = ({
+  uri,
+  style,
+  muted = false,
+}: {
+  uri: string;
+  style?: any;
+  muted?: boolean;
+}) => {
+  const isFocused = useIsFocused();
+  const [isMuted, setIsMuted] = useState(muted);
+
+  const player = useVideoPlayer({ uri }, (player) => {
+    player.loop = true;
+    player.muted = true;
+    player.play();
+  });
+
+  useEffect(() => {
+    if (!isFocused) {
+      player.muted = true;
+      player.pause();
+    } else {
+      player.muted = true;
+      setIsMuted(true);
+      player.play();
+    }
+  }, [isFocused]);
+
+  const toggleAudio = () => {
+    setIsMuted((prev) => {
+      const newState = !prev;
+      player.muted = newState;
+      if (newState) {
+        player.pause();
+      } else {
+        player.play();
+      }
+      return newState;
+    });
+  };
+
+  return (
+    <View>
+      <VideoView style={style} player={player} />
+      <TouchableOpacity
+        onPress={toggleAudio}
+        style={{ position: "absolute", left: 10, top: 10 }}
+      >
+        <Ionicons
+          name={isMuted ? "volume-mute" : "volume-high"}
+          size={24}
+          color="#fff"
+        />
+      </TouchableOpacity>
+    </View>
+  );
+};
+
 export default function FirstScreen() {
   const [selectedMedia, setSelectedMedia] = useState<MediaItem[]>([]);
   const [previewMedia, setPreviewMedia] = useState<MediaItem | null>(null);
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const pickImages = async () => {
@@ -45,7 +105,7 @@ export default function FirstScreen() {
       quality: 1,
     });
 
-    if (!result.canceled && result.assets.length > 0) {
+    if (!result.canceled && result.assets?.length > 0) {
       const savedItems: MediaItem[] = [];
 
       for (const asset of result.assets) {
@@ -63,39 +123,6 @@ export default function FirstScreen() {
     }
   };
 
-
-  const handleUploadAll = async () => {
-    try {
-      const imageUrls: string[] = [];
-      let videoUrl: string | null = null;
-      setLoading(true)
-      for (const item of selectedMedia) {
-        if (item.type === "image") {
-          const response = await uploadImage(item.uri);
-          if (response.success && response.data.urls.length > 0) {
-            imageUrls.push(response.data.urls[0]);
-          }
-        } else if (item.type === "video") {
-          const response = await uploadClip(item.uri);
-          if (response.success && response.data.url) {
-            videoUrl = response.data.url;
-          }
-        }
-      }
-      setLoading(false)
-      router.push({
-        pathname: "/textPostScreen",
-        params: {
-          uploadedImageUrls: encodeURIComponent(JSON.stringify(imageUrls)),
-          uploadedVideoUrl: videoUrl ? encodeURIComponent(videoUrl) : "",
-        },
-      });
-    } catch (err) {
-      console.error("❌ Error uploading media:", err);
-    }
-  };
-
-
   const pickVideo = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
@@ -109,7 +136,7 @@ export default function FirstScreen() {
       quality: 1,
     });
 
-    if (!result.canceled && result.assets.length > 0) {
+    if (!result.canceled && result.assets?.length > 0) {
       const pickedUri = result.assets[0].uri;
       let fileName = pickedUri.split("/").pop() || `video_${Date.now()}.mp4`;
       const newPath = `${FileSystem.documentDirectory}${fileName}`;
@@ -125,7 +152,6 @@ export default function FirstScreen() {
     }
   };
 
-
   const removeMedia = (uri: string) => {
     const updated = selectedMedia.filter((m) => m.uri !== uri);
     setSelectedMedia(updated);
@@ -134,8 +160,38 @@ export default function FirstScreen() {
     }
   };
 
-  const goToNextScreen = () => {
-    handleUploadAll()
+  const handleUploadAll = async () => {
+    try {
+      const imageUrls: string[] = [];
+      let videoUrl: string | null = null;
+      setLoading(true);
+
+      for (const item of selectedMedia) {
+        if (item.type === "image") {
+          const response = await uploadImage(item.uri);
+          if (response.success && response.data.urls?.length > 0) {
+            imageUrls.push(response.data.urls[0]);
+          }
+        } else if (item.type === "video") {
+          const response = await uploadClip(item.uri);
+          if (response.success && response.data.url) {
+            videoUrl = response.data.url;
+          }
+        }
+      }
+
+      setLoading(false);
+      router.push({
+        pathname: "/textPostScreen",
+        params: {
+          uploadedImageUrls: encodeURIComponent(JSON.stringify(imageUrls)),
+          uploadedVideoUrl: videoUrl ? encodeURIComponent(videoUrl) : "",
+        },
+      });
+    } catch (err) {
+      console.error("❌ Error uploading media:", err);
+      setLoading(false);
+    }
   };
 
   return (
@@ -174,7 +230,7 @@ export default function FirstScreen() {
         </View>
 
         <FlatList
-          data={selectedMedia}
+          data={selectedMedia || []}
           numColumns={3}
           contentContainerStyle={styles.gridContainer}
           keyExtractor={(item, index) => index.toString()}
@@ -198,27 +254,16 @@ export default function FirstScreen() {
         />
 
         {selectedMedia.length > 0 && !loading && (
-          <TouchableOpacity style={styles.nextButton} onPress={goToNextScreen}>
+          <TouchableOpacity style={styles.nextButton} onPress={handleUploadAll}>
             <Text style={styles.nextButtonText}>Next</Text>
           </TouchableOpacity>
         )}
 
-        {loading && (<ActivityIndicator size="large" color="#8C5EFF" style={{ margin: 10 }} />)}
+        {loading && <ActivityIndicator size="large" color="#8C5EFF" style={{ margin: 10 }} />}
       </View>
     </ScreenWrapper>
   );
 }
-
-const VideoPlayer = ({ uri, style, muted = false }: { uri: string; style?: any; muted?: boolean }) => {
-  const player = useVideoPlayer({ uri }, (player) => {
-    player.loop = true;
-    player.muted = muted;
-    if (!muted) player.play();
-  });
-
-  return <VideoView style={style} player={player} nativeControls={!muted} />;
-};
-
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#fff" },
