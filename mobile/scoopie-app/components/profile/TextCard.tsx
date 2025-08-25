@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { formatCount } from '@/utils/formatNumber';
 
 interface TextCardProps {
     avatar: string;
@@ -41,21 +42,20 @@ export default function TextCard({
 
             <View style={styles.footer}>
                 <View style={styles.iconBox}>
-
                     <Image source={require('../../assets/icons/watchIcon.png')} style={styles.iconImage} />
-                    <Text style={styles.iconText}>{views}</Text>
+                    <Text style={styles.iconText}>{formatCount(Number(views))}</Text>
                 </View>
                 <View style={styles.iconBox}>
                     <Image source={require('../../assets/icons/starIcon.png')} style={styles.iconImage} />
-                    <Text style={styles.iconText}>{stars}</Text>
+                  <Text style={styles.iconText}>{formatCount(Number(stars))}</Text>
                 </View>
                 <View style={styles.iconBox}>
                     <Image source={require('../../assets/icons/commentIcon.png')} style={styles.iconImage} />
-                    <Text style={styles.iconText}>{comments}</Text>
+                    <Text style={styles.iconText}>{formatCount(Number(comments))}</Text>
                 </View>
                 <View style={styles.iconBox}>
                     <Image source={require('../../assets/icons/shareIcon.png')} style={styles.iconImage} />
-                    <Text style={styles.iconText}>{shares}</Text>
+                    <Text style={styles.iconText}>{formatCount(Number(shares))}</Text>
                 </View>
                 <TouchableOpacity style={{ marginLeft: 'auto' }}>
                     <Image source={require('../../assets/icons/saveIcon.png')} style={styles.iconImage} />

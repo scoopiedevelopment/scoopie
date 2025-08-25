@@ -10,10 +10,12 @@ import {
   Image,
   ActivityIndicator,
   StyleSheet,
+  ScrollView,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';  // ✅ Added
 import apiClient from '../api/apiClient';
+import ScreenWrapper from '@/components/common/ScreenWrapper';
 
 const TABS = ['Top', 'Accounts', 'Posts', 'Clips'];
 
@@ -30,7 +32,7 @@ export default function SearchScreen() {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const res = await apiClient.get('/v1/profile/get-profile');
+        const res = await apiClient.get('/profile/get-profile');
         if (res.data?.data?.profile?.userId) {
           const id = res.data.data.profile.userId;
           setLoggedInUserId(id);
@@ -95,7 +97,7 @@ export default function SearchScreen() {
       setHasSearched(true);
       const endpoint = tab.toLowerCase();
       const response = await apiClient.get(
-        `/v1/search/${endpoint}/${searchQuery}`
+        `/search/${endpoint}/${searchQuery}`
       );
       setResults(response.data);
       saveRecentSearch(searchQuery);
@@ -106,10 +108,10 @@ export default function SearchScreen() {
     }
   };
 
+
   // ✅ Accounts render
   const renderAccounts = (accounts: any[]) => (
     <FlatList
-      key={'ACCOUNTS'}
       data={accounts}
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => (
@@ -131,7 +133,7 @@ export default function SearchScreen() {
             onPress={async () => {
               try {
                 const response = await apiClient.post(
-                  `/v1/connection/follow/${item.userId}`
+                  `/connection/follow/${item.userId}`
                 );
                 if (response.status === 200) {
                   console.log(`User ${item.id} followed successfully`);
@@ -149,20 +151,24 @@ export default function SearchScreen() {
   );
 
   // ✅ Pictures render
-  const renderPictures = (pictures: any[]) => (
-    <FlatList
-      key={'PICTURES'}
-      data={pictures}
-      numColumns={3}
-      keyExtractor={(item, index) => index.toString()}
-      renderItem={({ item }) => (
-        <Image
-          source={{ uri: item.url || 'https://via.placeholder.com/100?text=🖼️' }}
-          style={styles.picture}
+  const renderPictures = (pictures: any[]) => {
+    return (
+      <View style={{ flex: 1, alignItems: 'center' }}>
+        <FlatList
+          data={pictures}
+          numColumns={3}
+          showsVerticalScrollIndicator={false}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) => (
+            <Image
+              source={{ uri: item.url || 'https://via.placeholder.com/100?text=🖼️' }}
+              style={styles.picture}
+            />
+          )}
         />
-      )}
-    />
-  );
+      </View>
+    )
+  };
   const clearAllRecentSearches = async () => {
     if (!loggedInUserId) return;
     try {
@@ -177,10 +183,13 @@ export default function SearchScreen() {
 
   const renderClips = (clips: any[]) => (
     <FlatList
-      key={'CLIPS'}
       data={clips}
       numColumns={1}
+      showsVerticalScrollIndicator={false}
       keyExtractor={(item) => item.id}
+      contentContainerStyle={{
+        paddingBottom: 60,
+      }}
       renderItem={({ item }) => (
         <View style={styles.clipCard}>
           <Video
@@ -201,11 +210,11 @@ export default function SearchScreen() {
 
     if (selectedTab === 'Top') {
       return (
-        <View>
+        <View style={{ flex: 1 }}>
           {results.data.map((section: any, index: number) => {
             if (section.type === 'Accounts' && section.accounts?.length) {
               return (
-                <View key={index}>
+                <View key={index} style={{ maxHeight: '50%' }}>
                   <Text style={styles.sectionTitle}>Accounts</Text>
                   {renderAccounts(section.accounts)}
                 </View>
@@ -213,7 +222,7 @@ export default function SearchScreen() {
             }
             if (section.type === 'clips' && section.clips?.length) {
               return (
-                <View key={index}>
+                <View key={index} style={{ flex: 1 }}>
                   <Text style={styles.sectionTitle}>Clips</Text>
                   {renderClips(section.clips)}
                 </View>
@@ -238,94 +247,96 @@ export default function SearchScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.searchBar}>
-        <TextInput
-          placeholder="Search"
-          value={query}
-          onChangeText={setQuery}
-          style={styles.input}
-        />
-        <TouchableOpacity
-          style={styles.searchButton}
-          onPress={() => fetchResults(selectedTab, query)}
-        >
-          <Text style={styles.searchButtonText}>Search</Text>
-        </TouchableOpacity>
-      </View>
+    <ScreenWrapper >
+      <View style={styles.container}>
+        <View style={styles.searchBar}>
+          <TextInput
+            placeholder="Search"
+            value={query}
+            onChangeText={setQuery}
+            style={styles.input}
+          />
+          <TouchableOpacity
+            style={styles.searchButton}
+            onPress={() => fetchResults(selectedTab, query)}
+          >
+            <Text style={styles.searchButtonText}>Search</Text>
+          </TouchableOpacity>
+        </View>
 
-      {!hasSearched ? (
-        <View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 10 }}>
-            <Text style={styles.sectionTitle}>Recent</Text>
-            <TouchableOpacity onPress={clearAllRecentSearches}>
-              <Text style={{ color: '#8C5EFF', fontSize: 13, fontWeight: '600' }}>Clear All</Text>
-            </TouchableOpacity>
-          </View>
+        {!hasSearched ? (
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 10 }}>
+              <Text style={styles.sectionTitle}>Recent</Text>
+              <TouchableOpacity onPress={clearAllRecentSearches}>
+                <Text style={{ color: '#8C5EFF', fontSize: 13, fontWeight: '600' }}>Clear All</Text>
+              </TouchableOpacity>
+            </View>
 
-          <FlatList
-            data={recentSearches}
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={({ item }) => (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  paddingVertical: 10,
-                  paddingHorizontal: 10,
-                }}
-              >
-                <TouchableOpacity
-                  style={{ flexDirection: 'row', alignItems: 'center' }}
-                  onPress={() => {
-                    setQuery(item);
-                    fetchResults('Top', item);
+            <FlatList
+              data={recentSearches}
+              keyExtractor={(item, index) => index.toString()}
+              showsVerticalScrollIndicator={false}
+              renderItem={({ item }) => (
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    paddingVertical: 10,
+                    paddingHorizontal: 10,
                   }}
                 >
-                  <Text style={styles.username}>{item}</Text>
-                </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{ flexDirection: 'row', alignItems: 'center' }}
+                    onPress={() => {
+                      setQuery(item);
+                      fetchResults('Top', item);
+                    }}
+                  >
+                    <Text style={styles.username}>{item}</Text>
+                  </TouchableOpacity>
 
-                <TouchableOpacity onPress={() => deleteRecentSearch(item)}>
-                  <Ionicons name="close" size={22} color="#000" />
-                </TouchableOpacity>
-              </View>
-            )}
-          />
-        </View>
-      ) : (
-        <>
-
-          <View style={styles.tabs}>
-            {TABS.map((tab) => (
-              <TouchableOpacity
-                key={tab}
-                onPress={() => {
-                  setSelectedTab(tab);
-                  fetchResults(tab, query);
-                }}
-                style={[styles.tab, selectedTab === tab && styles.activeTab]}
-              >
-                <Text
-                  style={[
-                    styles.tabText,
-                    selectedTab === tab && styles.activeTabText,
-                  ]}
-                >
-                  {tab}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <TouchableOpacity onPress={() => deleteRecentSearch(item)}>
+                    <Ionicons name="close" size={22} color="#000" />
+                  </TouchableOpacity>
+                </View>
+              )}
+            />
           </View>
+        ) : (
+          <>
+            <View style={styles.tabs}>
+              {TABS.map((tab) => (
+                <TouchableOpacity
+                  key={tab}
+                  onPress={() => {
+                    setSelectedTab(tab);
+                    fetchResults(tab, query);
+                  }}
+                  style={[styles.tab, selectedTab === tab && styles.activeTab]}
+                >
+                  <Text
+                    style={[
+                      styles.tabText,
+                      selectedTab === tab && styles.activeTabText,
+                    ]}
+                  >
+                    {tab}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
 
-          {loading ? (
-            <ActivityIndicator size="large" color="#8A2BE2" />
-          ) : (
-            renderContent()
-          )}
-        </>
-      )}
-    </SafeAreaView>
+            {loading ? (
+              <ActivityIndicator size="large" color="#8A2BE2" />
+            ) : (
+              renderContent()
+            )}
+          </>
+        )}
+      </View>
+    </ScreenWrapper>
   );
 }
 
@@ -334,8 +345,6 @@ const styles = StyleSheet.create({
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-
-
     marginBottom: 12,
 
   },

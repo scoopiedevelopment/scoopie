@@ -1,5 +1,5 @@
 import { PostFeed } from '@/models/PostfeedModel';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,8 +9,10 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useSaved } from '../../contexts/SavedContext';
+import { Ionicons } from "@expo/vector-icons";
+import apiClient from "../../api/apiClient";
+import { getProfile } from '@/api/profileService';
+import { formatCount } from '@/utils/formatNumber';
 
 interface PostCardProps {
   post: PostFeed;
@@ -30,33 +32,87 @@ const PostCard = ({ post }: PostCardProps) => {
     _count
   } = post;
 
-  const { toggleSavePostItem, isPostSaved } = useSaved();
-  const [isTogglingSave, setIsTogglingSave] = useState(false);
-  const isSaved = isPostSaved(id);
+  const [isSaved, setIsSaved] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [userLoginId, setUserLoginId] = useState("")
+  // 🔹 Save Toggle
+  const handleToggleSave = async () => {
+    if (loading) return;
+    setLoading(true);
+
+    try {
+      if (userLoginId) {
+        const response = await apiClient.post("/saved/toggle", {
+          userId: userLoginId,
+          postId: id,
+        });
+        if (response.data.success) {
+          setIsSaved((prev) => !prev);
+        }
+      }
+
+    } catch (error) {
+      console.error("❌ Save toggle failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    const getProfileData = async () => {
+      const response = await getProfile()
+      if (response) {
+        setUserLoginId(response.data.profile.userId)
+      }
+    }
+    getProfileData()
+
+  }, [])
+
+  // 🔹 Like/Dislike Toggle
+  const handleToggleLike = async () => {
+    if (loading) return;
+    setLoading(true);
+
+    try {
+      const response = await apiClient.post<any>("/like/toggle", {
+        postId: id,
+        likedTo: userId, 
+      });
+
+      if (response.data.success) {
+        setLiked(!liked);
+      }
+    } catch (error) {
+      console.error("❌ Like toggle failed:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const calculateHoursAgo = (createdAt: string) => {
-    const createdTime = new Date(createdAt).getTime(); 
-    const currentTime = Date.now(); 
-    const diffMs = currentTime - createdTime; 
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60)); 
+    const createdTime = new Date(createdAt).getTime();
+    const currentTime = Date.now();
+    const diffMs = currentTime - createdTime;
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     return diffHours;
   };
 
-  const handleSavePress = async () => {
-    if (isTogglingSave) return;
+  // const handleSavePress = async () => {
+  //   if (isTogglingSave) return;
     
-    setIsTogglingSave(true);
-    try {
-      const saved = await toggleSavePostItem(id);
-      const message = saved ? 'Post saved!' : 'Post removed from saved';
-      Alert.alert('Success', message);
-    } catch (error) {
-      console.error('Error toggling save:', error);
-      Alert.alert('Error', 'Failed to save post. Please try again.');
-    } finally {
-      setIsTogglingSave(false);
-    }
-  };
+  //   setIsTogglingSave(true);
+  //   try {
+  //     const saved = await toggleSavePostItem(id);
+  //     const message = saved ? 'Post saved!' : 'Post removed from saved';
+  //     Alert.alert('Success', message);
+  //   } catch (error) {
+  //     console.error('Error toggling save:', error);
+  //     Alert.alert('Error', 'Failed to save post. Please try again.');
+  //   } finally {
+  //     setIsTogglingSave(false);
+  //   }
+  // };
 
 
   return (
@@ -105,30 +161,39 @@ const PostCard = ({ post }: PostCardProps) => {
         <View style={styles.leftIcons}>
           <View style={styles.engagementItem}>
             <Image source={require('../../assets/icons/watchIcon.png')} style={styles.iconImage} />
-            <Text style={styles.label}>{views}</Text>
+            <Text style={styles.label}>{formatCount(Number(views))}</Text>
           </View>
-          <View style={styles.engagementItem}>
-            <Image source={require('../../assets/icons/starIcon.png')} style={styles.iconImage} />
-            <Text style={styles.label}>{_count.likes}</Text>
-          </View>
+
+          <TouchableOpacity onPress={handleToggleLike} disabled={loading}>
+            <View style={styles.engagementItem}>
+              <Ionicons
+                name={liked ? "star" : "star-outline"}
+                size={20}
+                color={liked ? "black" : "black"}
+              />
+              <Text style={styles.label}>{formatCount(Number(_count.likes))}</Text>
+            </View>
+          </TouchableOpacity>
+
           <View style={styles.engagementItem}>
             <Image source={require('../../assets/icons/commentIcon.png')} style={styles.iconImage} />
-            <Text style={styles.label}>{_count.comments}</Text>
+            <Text style={styles.label}>{formatCount(Number(_count.comments))}</Text>
           </View>
           <View style={styles.engagementItem}>
             <Image source={require('../../assets/icons/shareIcon.png')} style={styles.iconImage} />
-            <Text style={styles.label}>{shares}</Text>
+            <Text style={styles.label}>{formatCount(Number(shares))}</Text>
           </View>
         </View>
 
-        <TouchableOpacity 
-          style={[styles.saveIcon, isSaved && styles.savedIcon]} 
-          onPress={handleSavePress}
-          disabled={isTogglingSave}
-        >
-          <Image 
-            source={require('../../assets/icons/saveIcon.png')} 
-            style={[styles.iconImage, isSaved && styles.savedIconImage]} 
+        {/* Save Button */}
+        <TouchableOpacity style={styles.saveIcon} onPress={handleToggleSave} disabled={loading}>
+          <Image
+            source={
+              isSaved
+                ? require('../../assets/icons/saveIcon.png')
+                : require('../../assets/icons/saveIcon.png')
+            }
+            style={styles.iconImage}
           />
         </TouchableOpacity>
       </View>

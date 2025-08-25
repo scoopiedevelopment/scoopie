@@ -51,10 +51,7 @@ interface ToggleSaveResponse {
 
 export const getSavedItems = async (page: number = 1) => {
   try {
-    console.log('Making API call to get saved items, page:', page);
     const response = await apiClient.get<SavedResponse>(`/saved/get-saved/${page}`);
-    
-    console.log('Saved items API raw response:', response.data);
     
     // Return the response in the expected format
     return response.data;

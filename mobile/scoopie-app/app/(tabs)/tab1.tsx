@@ -1,4 +1,6 @@
-import React, { useEffect, useState, } from 'react';
+
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { ViewToken } from "react-native"; 
 import {
   FlatList,
   Image,
@@ -19,6 +21,7 @@ import { PostFeed } from '@/models/PostfeedModel';
 import { UserStory } from '@/models/StoryModel';
 import { getStories } from '@/api/storyService';
 import StoryViewer from '../storyViewer';
+import apiClient from '@/api/apiClient'; 
 
 const screenWidth = Dimensions.get('window').width;
 const CARD_WIDTH = screenWidth / 2 - 20;
@@ -32,10 +35,13 @@ export default function HomeScreen() {
   const [page, setPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState<boolean>(true);
 
-
   const [storyPage, setStoryPage] = useState<number>(1);
   const [storyHasMore, setStoryHasMore] = useState<boolean>(true);
   const [stories, setStories] = useState<UserStory[]>([]);
+
+  // 🔹 Track already viewed post IDs so same post ka API bar-bar na hit ho
+  const viewedIds = useRef<Set<string>>(new Set());
+
   useEffect(() => {
     loadData(1, true);
     loadStories(1);
@@ -108,6 +114,35 @@ export default function HomeScreen() {
     loadData(1, true);
   };
 
+  // 🔹 API call jab user post scroll karke dekh le
+  const sendViewApi = async (postId: string) => {
+    try {
+      await apiClient.post(`/count/post/${postId}`); 
+      console.log("✅ View counted for:", postId);
+    } catch (err) {
+      console.log("❌ Error sending view:", err);
+    }
+  };
+
+  // 🔹 Jab FlatList me ek post visible ho jaye
+  const onViewableItemsChanged = useCallback(
+    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
+      viewableItems.forEach((viewable) => {
+        const postId = (viewable.item as PostFeed).id;
+        if (postId && !viewedIds.current.has(postId)) {
+          viewedIds.current.add(postId);
+          sendViewApi(postId);
+        }
+      });
+    },
+    []
+  );
+
+  // 🔹 ViewabilityConfig set kiya - kam se kam 50% visible hoga tab trigger karega
+  const viewabilityConfig = {
+    itemVisiblePercentThreshold: 50,
+  };
+
   const renderSkeleton = () => (
     <>
       {[1, 2].map((_, row) => (
@@ -154,6 +189,9 @@ export default function HomeScreen() {
             <Text style={{ color: 'black', fontSize: 18 }}>No Feed Available</Text>
           </View>
         }
+        // 🔹 Scroll detection
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
       />
     );
   };
@@ -170,10 +208,13 @@ export default function HomeScreen() {
     <ScreenWrapper gradient>
       <View style={styles.container}>
         {renderHeader()}
-
         <View style={styles.tabContainer}>
           {['hot', 'added'].map((tab) => (
-            <TouchableOpacity key={tab} onPress={() => setActiveTab(tab as 'hot' | 'added')} style={styles.tabButton}>
+            <TouchableOpacity 
+              key={tab} 
+              onPress={() => setActiveTab(tab as 'hot' | 'added')} 
+              style={styles.tabButton}
+            >
               <Text style={[styles.tabText, activeTab === tab && styles.activeTab]}>
                 {tab === 'hot' ?
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>

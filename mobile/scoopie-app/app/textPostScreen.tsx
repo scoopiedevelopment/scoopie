@@ -27,10 +27,9 @@ export default function SecondScreen() {
   const [postText, setPostText] = useState('');
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const { uploadedImageUrls, uploadedVideoUrl, capturedImageUri } = useLocalSearchParams<{
+  const { uploadedImageUrls, uploadedVideoUrl } = useLocalSearchParams<{
     uploadedImageUrls?: string;
     uploadedVideoUrl?: string;
-    capturedImageUri?: string;
   }>();
   const router = useRouter();
 
@@ -38,11 +37,9 @@ export default function SecondScreen() {
     ? JSON.parse(decodeURIComponent(uploadedImageUrls))
     : [];
 
-  const capturedImage = capturedImageUri ? decodeURIComponent(capturedImageUri) : null;
   const videoUrl = uploadedVideoUrl ? decodeURIComponent(uploadedVideoUrl) : null;
   const combinedData = [
     ...(imageUrls || []),
-    ...(capturedImage ? [capturedImage] : []),
     ...(videoUrl ? [videoUrl] : []),
   ];
 
@@ -53,12 +50,12 @@ export default function SecondScreen() {
       }
 
       // Handle captured image from camera
-      if (capturedImage) {
-        const uploadResult = await uploadImage(capturedImage);
-        if (uploadResult.success && uploadResult.data.urls?.length > 0) {
-          const result = await createPost(uploadResult.data.urls, postText || '');
-        }
-      }
+      // if (capturedImage) {
+      //   const uploadResult = await uploadImage(capturedImage);
+      //   if (uploadResult.success && uploadResult.data.urls?.length > 0) {
+      //     const result = await createPost(uploadResult.data.urls, postText || '');
+      //   }
+      // }
 
       if (imageUrls.length > 0) {
         const result = await createPost(imageUrls, postText || '');

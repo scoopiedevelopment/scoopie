@@ -36,16 +36,18 @@ const ProfileTop = ({ profileData }: ProfileTopProps) => {
     };
 
     const handleEmailPress = (email: string) => {
-              Linking.openURL(`mailto:${email}`);
+        Linking.openURL(`mailto:${email}`);
     };
 
     return (
         <View style={styles.statsProfileRow}>
             <View style={styles.statsCol}>
-                <View style={styles.statBox}>
-                    <Text style={styles.statValue}>{profileData?.profile?._count?.following}</Text>
-                    <Text style={styles.statLabel}>Added</Text>
-                </View>
+                <Pressable onPress={() => router.push('/profileSearch')}>
+                    <View style={styles.statBox}>
+                        <Text style={styles.statValue}>{profileData?.profile?._count?.following}</Text>
+                        <Text style={styles.statLabel}>Added</Text>
+                    </View>
+                </Pressable>
                 <View style={styles.line} />
                 <View style={styles.statBox}>
                     <Text style={styles.statValue}>{profileData?.profile?._count?.totalLikes}</Text>
