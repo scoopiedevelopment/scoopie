@@ -2,7 +2,6 @@ import { NextFunction, Request } from 'express';
 import errorObject from './errorObject';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 export default (
   nextFunc: NextFunction,
   err: unknown,
@@ -14,14 +13,21 @@ export default (
       case 'P2023':
         return nextFunc(errorObject(new Error('Invalid Id provided.'), req, 409));
 
-      case 'P2002':
-        return nextFunc(
-          errorObject(
-            new Error('Username is already taken. Please choose another one.'),
-            req,
-            409
-          )
-        );
+      case 'P2002': {
+        const target = (err.meta?.target as string[]) || [];
+
+        let message = 'Duplicate entry.';
+
+        if (target.includes('username')) {
+          message = 'Username is already taken. Please choose another one.';
+        } else if (target.includes('userId_postId')) {
+          message = 'This post is already saved.';
+        } else if (target.includes('userId_clipId')) {
+          message = 'This clip is already saved.';
+        }
+
+        return nextFunc(errorObject(new Error(message), req, 409));
+      }
 
       case 'P2025':
         return nextFunc(

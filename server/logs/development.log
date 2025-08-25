@@ -1631,3 +1631,425 @@
         }
     }
 }
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-25T11:00:12.189Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-25T11:00:12.191Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-25T11:03:44.313Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-25T11:03:44.315Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-25T11:04:38.001Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-25T11:04:38.003Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-25T11:11:40.576Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-25T11:11:40.579Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-25T11:15:07.355Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "POST",
+            "url": "/v1/saved/toggle"
+        },
+        "message": "Saved successfully",
+        "data": null
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-25T11:15:09.496Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "POST",
+            "url": "/v1/saved/toggle"
+        },
+        "message": "Removed from saved",
+        "data": null
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-25T11:15:11.353Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "POST",
+            "url": "/v1/saved/toggle"
+        },
+        "message": "Saved successfully",
+        "data": null
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-25T11:17:12.812Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/feed/clipsFeeds/2"
+        },
+        "message": "The operation has been successful",
+        "data": []
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-25T11:22:02.034Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-25T11:22:02.036Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-25T11:33:22.312Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-25T11:33:22.314Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-25T11:33:42.658Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/feed/clipsFeeds/2"
+        },
+        "message": "The operation has been successful",
+        "data": []
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-25T11:33:49.594Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/feed/clipsFeeds/1"
+        },
+        "message": "The operation has been successful",
+        "data": [
+            {
+                "id": "68a4be6fd455c16db5e382e6",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "visibility": "Public",
+                "video": "https://ik.imagekit.io/abbsumfdi/uploads/Screencast_from_2025-03-03_12-04-44_9K8P2AACc.mp4",
+                "text": "hello Clip",
+                "views": 0,
+                "shares": 0,
+                "createdAt": "2025-08-19T18:11:59.127Z",
+                "updatedAt": "2025-08-19T18:11:59.127Z",
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 1,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": []
+            },
+            {
+                "id": "68a48784d455c16db5e382da",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "visibility": "Public",
+                "video": "https://ik.imagekit.io/abbsumfdi/uploads/Screencast_from_2025-03-03_12-04-44_9K8P2AACc.mp4",
+                "text": "hello Clip",
+                "views": 0,
+                "shares": 0,
+                "createdAt": "2025-08-19T14:17:40.090Z",
+                "updatedAt": "2025-08-19T14:17:40.090Z",
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 0,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": []
+            },
+            {
+                "id": "68a067ecc1cf6d4b5f43512e",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "visibility": "Public",
+                "video": "https://ik.imagekit.io/abbsumfdi/uploads/Screencast_from_2025-03-03_12-04-44_9K8P2AACc.mp4",
+                "text": "hello Clip",
+                "views": 0,
+                "shares": 0,
+                "createdAt": "2025-08-16T11:13:48.008Z",
+                "updatedAt": "2025-08-16T11:13:48.008Z",
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 0,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": []
+            },
+            {
+                "id": "68a067a4c1cf6d4b5f43512b",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "visibility": "Public",
+                "video": "https://ik.imagekit.io/abbsumfdi/uploads/Screencast_from_2025-03-03_12-04-44_9K8P2AACc.mp4",
+                "text": "Test Clip",
+                "views": 0,
+                "shares": 0,
+                "createdAt": "2025-08-16T11:12:36.013Z",
+                "updatedAt": "2025-08-16T11:12:36.013Z",
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 0,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": []
+            },
+            {
+                "id": "68a04438c1cf6d4b5f43512a",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "visibility": "Public",
+                "video": "https://ik.imagekit.io/abbsumfdi/uploads/Screencast_from_2025-03-03_12-04-44_9K8P2AACc.mp4",
+                "text": "Test Clip",
+                "views": 0,
+                "shares": 0,
+                "createdAt": "2025-08-16T08:41:28.414Z",
+                "updatedAt": "2025-08-16T08:41:28.414Z",
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 0,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": []
+            },
+            {
+                "id": "688def63c5ad9efe521bd2bd",
+                "userId": "688da64ec5ad9efe521bd2b6",
+                "visibility": "Public",
+                "video": "https://ik.imagekit.io/abbsumfdi/uploads/Screencast_from_2025-03-03_12-04-44_9K8P2AACc.mp4",
+                "text": "Test Clip",
+                "views": 0,
+                "shares": 0,
+                "createdAt": "2025-08-02T10:58:43.051Z",
+                "updatedAt": "2025-08-02T10:58:43.051Z",
+                "user": {
+                    "userId": "688da64ec5ad9efe521bd2b6",
+                    "username": "user1234",
+                    "profilePic": null
+                },
+                "_count": {
+                    "likes": 0,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": []
+            },
+            {
+                "id": "688de4f0c5ad9efe521bd2ba",
+                "userId": "688da64ec5ad9efe521bd2b6",
+                "visibility": "Public",
+                "video": "https://ik.imagekit.io/abbsumfdi/uploads/Screencast_from_2025-03-03_12-04-44_9K8P2AACc.mp4",
+                "text": "Test Clip",
+                "views": 0,
+                "shares": 0,
+                "createdAt": "2025-08-02T10:14:08.880Z",
+                "updatedAt": "2025-08-02T10:14:08.880Z",
+                "user": {
+                    "userId": "688da64ec5ad9efe521bd2b6",
+                    "username": "user1234",
+                    "profilePic": null
+                },
+                "_count": {
+                    "likes": 0,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": []
+            },
+            {
+                "id": "688de4b2c5ad9efe521bd2b9",
+                "userId": "688da64ec5ad9efe521bd2b6",
+                "visibility": "Public",
+                "video": "https://ik.imagekit.io/abbsumfdi/uploads/Screencast_from_2025-03-03_12-04-44_9K8P2AACc.mp4",
+                "text": "Test Clip",
+                "views": 0,
+                "shares": 0,
+                "createdAt": "2025-08-02T10:13:06.812Z",
+                "updatedAt": "2025-08-02T10:13:06.812Z",
+                "user": {
+                    "userId": "688da64ec5ad9efe521bd2b6",
+                    "username": "user1234",
+                    "profilePic": null
+                },
+                "_count": {
+                    "likes": 0,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": []
+            },
+            {
+                "id": "688ddfaec5ad9efe521bd2b8",
+                "userId": "688da64ec5ad9efe521bd2b6",
+                "visibility": "Public",
+                "video": "https://ik.imagekit.io/abbsumfdi/uploads/Screencast_from_2025-03-03_12-04-44_9K8P2AACc.mp4",
+                "text": "Test Clip",
+                "views": 0,
+                "shares": 0,
+                "createdAt": "2025-08-02T09:51:42.805Z",
+                "updatedAt": "2025-08-02T09:51:42.805Z",
+                "user": {
+                    "userId": "688da64ec5ad9efe521bd2b6",
+                    "username": "user1234",
+                    "profilePic": null
+                },
+                "_count": {
+                    "likes": 0,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": []
+            },
+            {
+                "id": "68516b61c5ad9efe521bd2af",
+                "userId": "683d40a9c5ad9efe521bd2a7",
+                "visibility": "Public",
+                "video": "https://ik.imagekit.io/abbsumfdi/uploads/Screencast_from_2025-03-03_12-04-44_9K8P2AACc.mp4",
+                "text": "Test Clip",
+                "views": 0,
+                "shares": 0,
+                "createdAt": "2025-06-17T13:19:29.994Z",
+                "updatedAt": "2025-06-17T13:19:29.994Z",
+                "user": {
+                    "userId": "683d40a9c5ad9efe521bd2a7",
+                    "username": "user2354",
+                    "profilePic": null
+                },
+                "_count": {
+                    "likes": 0,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": []
+            }
+        ]
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-25T11:34:46.702Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-25T11:34:46.704Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}

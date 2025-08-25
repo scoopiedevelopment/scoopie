@@ -120,8 +120,8 @@ model Saved {
 
   createdAt DateTime @default(now())
 
-  @@unique([userId, postId])
-  @@unique([userId, clipId])
+  @@unique([userId, postId, clipId])
+
 }
 
 model Follow {
