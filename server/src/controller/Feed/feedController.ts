@@ -14,17 +14,24 @@ function shuffleArray<T>(array: T[]): T[] {
     return array;
 }
 
-async function getMixedFeed({ id, limit, page }: { id: string; limit: number; page: number }) {
-  const seenPostIds = await redis.smembers(`seenPosts:${id}`);
+async function getMixedFeed({
+  id,
+  limit,
+  page,
+}: {
+  id: string;
+  limit: number;
+  page: number;
+}) {
 
   const userFollowing = await prisma.profile.findUnique({
     where: { userId: id },
     select: {
       following: {
-        where: { status: 'Accepted' },
-        select: { followingId: true }
-      }
-    }
+        where: { status: "Accepted" },
+        select: { followingId: true },
+      },
+    },
   });
 
   const followingIds =
@@ -33,46 +40,46 @@ async function getMixedFeed({ id, limit, page }: { id: string; limit: number; pa
   const followingPosts = await prisma.post.findMany({
     where: {
       userId: { in: followingIds },
-      createdAt: { gt: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-      id: { notIn: seenPostIds }
+      createdAt: { gt: new Date(Date.now() - 24 * 60 * 60 * 1000) }, 
     },
     include: {
       media: { select: { url: true, type: true } },
       user: { select: { id: true, username: true, profilePic: true } },
       _count: { select: { likes: true, comments: true } },
       likes: { where: { likedById: id } },
-      savedBy: { where: { userId: id } }
+      savedBy: { where: { userId: id } },
     },
-    orderBy: { createdAt: 'desc' },
-    skip: page * 10,
-    take: 10
+    orderBy: { createdAt: "desc" },
+    skip: page * limit,
+    take: limit,
   });
 
-  if (followingPosts.length > 0) {
-    await redis.sadd(`seenPosts:${id}`, ...followingPosts.map((p) => p.id));
-    await redis.expire(`seenPosts:${id}`, 86400);
+  if (followingPosts.length >= limit) {
+    return followingPosts;
   }
 
-  const excludeIds = new Set([...seenPostIds, ...followingPosts.map((p) => p.id)]);
+  const excludeIds = new Set(followingPosts.map((p) => p.id));
+  const remaining = limit - followingPosts.length;
 
   const trendingPosts = await prisma.post.findMany({
     where: {
       id: { notIn: Array.from(excludeIds) },
-      user: { type: 'Public' }
+      user: { type: "Public" },
     },
     include: {
       media: { select: { url: true, type: true } },
       user: { select: { userId: true, username: true, profilePic: true } },
       _count: { select: { likes: true, comments: true } },
       likes: { where: { likedById: id } },
-      savedBy: { where: { userId: id } }
+      savedBy: { where: { userId: id } },
     },
-    take: limit - followingPosts.length,
     orderBy: [
-      { likes: { _count: 'desc' } },
-      { comments: { _count: 'desc' } },
-      { createdAt: 'desc' }
-    ]
+      { likes: { _count: "desc" } },
+      { comments: { _count: "desc" } },
+      { createdAt: "desc" },
+    ],
+    skip: page * limit, 
+    take: remaining,
   });
 
   for (const post of trendingPosts) {
@@ -85,30 +92,30 @@ async function getMixedFeed({ id, limit, page }: { id: string; limit: number; pa
   }
 
   const feed = shuffleArray([...followingPosts, ...trendingPosts]);
+
   return feed;
 }
-
 
 
 
 export default {
     feeds: async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const user = req.user as User; 
+            const user = req.user as User;
             const { page } = req.params;
-            const parshedPage = parseInt(page || '1') - 1;
+
+            const parsedPage = parseInt(page || "1") - 1; // 0-based
             const limit = 20;
-            console.log(parshedPage);
-            const feed = await getMixedFeed({id: user.userId, limit, page: parshedPage})
 
-            console.log("fdsfsd");
-            
-            
+            const feed = await getMixedFeed({
+            id: user.userId,
+            limit,
+            page: parsedPage,
+            });
+
             httpResponse(req, res, 200, responseMessage.SUCCESS, feed);
-
-
         } catch (error) {
-            httpError(next, error, req, 500)
+            httpError(next, error, req, 500);
         }
     },
     clipFeeds: async (req: Request, res: Response, next: NextFunction) => {

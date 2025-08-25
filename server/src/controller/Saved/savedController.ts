@@ -20,7 +20,7 @@ export default {
 
     if (postId) {
       existing = await prisma.saved.findFirst({ where: { userId, postId } });
-
+      
       if (existing) {
         await prisma.saved.delete({ where: { id: existing.id } });
         return httpResponse(req, res, 200, 'Removed from saved', null);
