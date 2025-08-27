@@ -4,7 +4,6 @@ import { prisma } from '../../util/prisma';
 import { User } from '../Authentication/types';
 import httpResponse from '../../util/httpResponse';
 import responseMessage from '../../constant/responseMessage';
-import { redis } from '../../util/redis';
 
 function shuffleArray<T>(array: T[]): T[] {
     for (let i = array.length - 1; i > 0; i--) {
@@ -46,8 +45,8 @@ async function getMixedFeed({
       media: { select: { url: true, type: true } },
       user: { select: { id: true, username: true, profilePic: true } },
       _count: { select: { likes: true, comments: true } },
-      likes: { where: { likedById: id } },
-      savedBy: { where: { userId: id } },
+      likes: { where: { likedById: id }, select: { likedById: true } },
+      savedBy: { where: { userId: id }, select: { userId: true } },
     },
     orderBy: { createdAt: "desc" },
     skip: page * limit,
@@ -70,8 +69,8 @@ async function getMixedFeed({
       media: { select: { url: true, type: true } },
       user: { select: { userId: true, username: true, profilePic: true } },
       _count: { select: { likes: true, comments: true } },
-      likes: { where: { likedById: id } },
-      savedBy: { where: { userId: id } },
+      likes: { where: { likedById: id }, select: { likedById: true } },
+      savedBy: { where: { userId: id }, select: { userId: true } },
     },
     orderBy: [
       { likes: { _count: "desc" } },
@@ -81,15 +80,6 @@ async function getMixedFeed({
     skip: page * limit, 
     take: remaining,
   });
-
-  for (const post of trendingPosts) {
-    const redisLikes = await redis.get(`like_count:${post.id}`);
-    if (redisLikes) {
-      post._count.likes = parseInt(redisLikes);
-    } else {
-      await redis.set(`like_count:${post.id}`, post._count.likes);
-    }
-  }
 
   const feed = shuffleArray([...followingPosts, ...trendingPosts]);
 

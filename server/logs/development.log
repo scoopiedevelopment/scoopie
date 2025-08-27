@@ -2053,3 +2053,836 @@
         "SERVER_URL": "http://localhost:5000"
     }
 }
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-27T16:36:46.056Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-27T16:36:46.057Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-27T16:37:05.979Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-27T16:37:05.980Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-27T16:38:24.991Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-27T16:38:24.993Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-27T16:39:07.473Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/feed/postFeeds/1"
+        },
+        "message": "The operation has been successful",
+        "data": [
+            {
+                "id": "68a31979d455c16db5e382d1",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "text": "hellocheck",
+                "visibility": "Public",
+                "views": 5,
+                "shares": 0,
+                "createdAt": "2025-08-18T12:15:53.415Z",
+                "updatedAt": "2025-08-25T14:39:26.531Z",
+                "media": [
+                    {
+                        "url": "https://ik.imagekit.io/3b5vdaqok0/uploads/1000069807_v4jYUV5VR.jpg",
+                        "type": "Image"
+                    },
+                    {
+                        "url": "https://ik.imagekit.io/3b5vdaqok0/uploads/1000069797_ZRCTSiseL.jpg",
+                        "type": "Image"
+                    }
+                ],
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 0,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": []
+            },
+            {
+                "id": "68516d4cc5ad9efe521bd2b0",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "text": "hellocheck2",
+                "visibility": "Public",
+                "views": 2,
+                "shares": 0,
+                "createdAt": "2025-06-17T13:27:40.923Z",
+                "updatedAt": "2025-08-25T14:00:53.246Z",
+                "media": [
+                    {
+                        "url": "https://ik.imagekit.io/abbsumfdi/uploads/Screenshot_from_2025-04-02_19-00-59_UeKXkPG4N.png",
+                        "type": "Image"
+                    }
+                ],
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 0,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": []
+            },
+            {
+                "id": "68516b38c5ad9efe521bd2ad",
+                "userId": "683d40a9c5ad9efe521bd2a7",
+                "text": "hellocheck2",
+                "visibility": "Public",
+                "views": 3,
+                "shares": 0,
+                "createdAt": "2025-06-17T13:18:48.381Z",
+                "updatedAt": "2025-08-25T14:34:16.293Z",
+                "media": [
+                    {
+                        "url": "https://ik.imagekit.io/abbsumfdi/uploads/Screenshot_from_2025-04-02_19-00-59_UeKXkPG4N.png",
+                        "type": "Image"
+                    }
+                ],
+                "user": {
+                    "userId": "683d40a9c5ad9efe521bd2a7",
+                    "username": "user2354",
+                    "profilePic": null
+                },
+                "_count": {
+                    "likes": 1,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": [
+                    {
+                        "id": "68aedb99645b5593210dbb2a",
+                        "userId": "688e40a7c5ad9efe521bd2c0",
+                        "postId": "68516b38c5ad9efe521bd2ad",
+                        "clipId": null,
+                        "createdAt": "2025-08-27T10:19:05.971Z"
+                    }
+                ]
+            },
+            {
+                "id": "68a48772d455c16db5e382d8",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "text": "hellocheck",
+                "visibility": "Public",
+                "views": 4,
+                "shares": 0,
+                "createdAt": "2025-08-19T14:17:22.063Z",
+                "updatedAt": "2025-08-25T14:38:52.034Z",
+                "media": [
+                    {
+                        "url": "https://ik.imagekit.io/3b5vdaqok0/uploads/upload_1755612900143_mdptloSUa.jpg",
+                        "type": "Image"
+                    }
+                ],
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 1,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": []
+            },
+            {
+                "id": "68a37e09d455c16db5e382d5",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "text": "hellocheck",
+                "visibility": "Public",
+                "views": 2,
+                "shares": 0,
+                "createdAt": "2025-08-18T19:24:57.201Z",
+                "updatedAt": "2025-08-25T13:59:03.038Z",
+                "media": [],
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 0,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": []
+            },
+            {
+                "id": "68a067e3c1cf6d4b5f43512c",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "text": "hellocheck",
+                "visibility": "Public",
+                "views": 3,
+                "shares": 0,
+                "createdAt": "2025-08-16T11:13:39.519Z",
+                "updatedAt": "2025-08-25T14:39:26.532Z",
+                "media": [
+                    {
+                        "url": "https://ik.imagekit.io/abbsumfdi/uploads/Screenshot_from_2025-04-02_19-00-59_UeKXkPG4N.png",
+                        "type": "Image"
+                    }
+                ],
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 1,
+                    "comments": 0
+                },
+                "likes": [
+                    {
+                        "id": "68ab6d7e68fd1910940ad705",
+                        "postId": "68a067e3c1cf6d4b5f43512c",
+                        "clipId": null,
+                        "commentId": null,
+                        "likedById": "688e40a7c5ad9efe521bd2c0",
+                        "createdAt": "2025-08-24T19:52:30.626Z"
+                    }
+                ],
+                "savedBy": []
+            },
+            {
+                "id": "68a4bf0dd455c16db5e382e7",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "text": "hellocheck",
+                "visibility": "Public",
+                "views": 4,
+                "shares": 0,
+                "createdAt": "2025-08-19T18:14:37.456Z",
+                "updatedAt": "2025-08-25T14:38:52.035Z",
+                "media": [
+                    {
+                        "url": "https://ik.imagekit.io/3b5vdaqok0/uploads/1000069807_v8wEM7TSw.jpg",
+                        "type": "Image"
+                    }
+                ],
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 1,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": []
+            },
+            {
+                "id": "68a33039d455c16db5e382d4",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "text": "hellocheck",
+                "visibility": "Public",
+                "views": 2,
+                "shares": 0,
+                "createdAt": "2025-08-18T13:52:57.396Z",
+                "updatedAt": "2025-08-25T13:59:03.879Z",
+                "media": [],
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 1,
+                    "comments": 0
+                },
+                "likes": [
+                    {
+                        "id": "68ab6d7e68fd1910940ad704",
+                        "postId": "68a33039d455c16db5e382d4",
+                        "clipId": null,
+                        "commentId": null,
+                        "likedById": "688e40a7c5ad9efe521bd2c0",
+                        "createdAt": "2025-08-24T19:52:30.626Z"
+                    }
+                ],
+                "savedBy": [
+                    {
+                        "id": "68af0e88645b5593210dbb2b",
+                        "userId": "688e40a7c5ad9efe521bd2c0",
+                        "postId": "68a33039d455c16db5e382d4",
+                        "clipId": null,
+                        "createdAt": "2025-08-27T13:56:24.948Z"
+                    }
+                ]
+            },
+            {
+                "id": "68a0c0ad70d922e8950ac2a0",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "text": "hellocheck",
+                "visibility": "Public",
+                "views": 3,
+                "shares": 0,
+                "createdAt": "2025-08-16T17:32:29.815Z",
+                "updatedAt": "2025-08-25T14:34:16.283Z",
+                "media": [],
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 1,
+                    "comments": 0
+                },
+                "likes": [
+                    {
+                        "id": "68ac1e3f68fd1910940ad712",
+                        "postId": "68a0c0ad70d922e8950ac2a0",
+                        "clipId": null,
+                        "commentId": null,
+                        "likedById": "688e40a7c5ad9efe521bd2c0",
+                        "createdAt": "2025-08-25T08:26:39.554Z"
+                    }
+                ],
+                "savedBy": [
+                    {
+                        "id": "68ac746e645b5593210dbb25",
+                        "userId": "688e40a7c5ad9efe521bd2c0",
+                        "postId": "68a0c0ad70d922e8950ac2a0",
+                        "clipId": null,
+                        "createdAt": "2025-08-25T14:34:22.161Z"
+                    }
+                ]
+            },
+            {
+                "id": "68a485ebd455c16db5e382d7",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "text": "hellocheck",
+                "visibility": "Public",
+                "views": 2,
+                "shares": 0,
+                "createdAt": "2025-08-19T14:10:51.607Z",
+                "updatedAt": "2025-08-25T14:12:21.334Z",
+                "media": [],
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 0,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": []
+            },
+            {
+                "id": "688e18b0c5ad9efe521bd2be",
+                "userId": "688da64ec5ad9efe521bd2b6",
+                "text": "hellocheck",
+                "visibility": "Public",
+                "views": 3,
+                "shares": 0,
+                "createdAt": "2025-08-02T13:54:56.084Z",
+                "updatedAt": "2025-08-25T13:59:02.437Z",
+                "media": [
+                    {
+                        "url": "https://ik.imagekit.io/abbsumfdi/uploads/Screenshot_from_2025-04-02_19-00-59_UeKXkPG4N.png",
+                        "type": "Image"
+                    }
+                ],
+                "user": {
+                    "userId": "688da64ec5ad9efe521bd2b6",
+                    "username": "user1234",
+                    "profilePic": null
+                },
+                "_count": {
+                    "likes": 0,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": []
+            },
+            {
+                "id": "68a0b49ec1cf6d4b5f435134",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "text": "hellocheck",
+                "visibility": "Public",
+                "views": 2,
+                "shares": 0,
+                "createdAt": "2025-08-16T16:41:02.489Z",
+                "updatedAt": "2025-08-25T13:58:52.810Z",
+                "media": [
+                    {
+                        "url": "https://ik.imagekit.io/abbsumfdi/uploads/Screenshot_from_2025-04-02_19-00-59_UeKXkPG4N.png",
+                        "type": "Image"
+                    }
+                ],
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 1,
+                    "comments": 0
+                },
+                "likes": [
+                    {
+                        "id": "68ab6d7e68fd1910940ad707",
+                        "postId": "68a0b49ec1cf6d4b5f435134",
+                        "clipId": null,
+                        "commentId": null,
+                        "likedById": "688e40a7c5ad9efe521bd2c0",
+                        "createdAt": "2025-08-24T19:52:30.626Z"
+                    }
+                ],
+                "savedBy": []
+            }
+        ]
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-27T16:39:46.597Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-27T16:39:46.599Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "RATE_LIMITER_INITIATED",
+    "timestamp": "2025-08-27T16:40:09.524Z",
+    "meta": {}
+}
+{
+    "level": "INFO",
+    "message": "APPLICATION_STARTED",
+    "timestamp": "2025-08-27T16:40:09.526Z",
+    "meta": {
+        "PORT": "5000",
+        "SERVER_URL": "http://localhost:5000"
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-27T16:40:29.448Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "POST",
+            "url": "/v1/like/toggle"
+        },
+        "message": "You have liked the post.",
+        "data": null
+    }
+}
+{
+    "level": "INFO",
+    "message": "CONTROLLER_RESPONSE",
+    "timestamp": "2025-08-27T16:40:43.775Z",
+    "meta": {
+        "success": true,
+        "statusCode": 200,
+        "request": {
+            "ip": "::1",
+            "method": "GET",
+            "url": "/v1/feed/postFeeds/1"
+        },
+        "message": "The operation has been successful",
+        "data": [
+            {
+                "id": "68a48772d455c16db5e382d8",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "text": "hellocheck",
+                "visibility": "Public",
+                "views": 4,
+                "shares": 0,
+                "createdAt": "2025-08-19T14:17:22.063Z",
+                "updatedAt": "2025-08-25T14:38:52.034Z",
+                "media": [
+                    {
+                        "url": "https://ik.imagekit.io/3b5vdaqok0/uploads/upload_1755612900143_mdptloSUa.jpg",
+                        "type": "Image"
+                    }
+                ],
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 1,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": []
+            },
+            {
+                "id": "68a0b49ec1cf6d4b5f435134",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "text": "hellocheck",
+                "visibility": "Public",
+                "views": 2,
+                "shares": 0,
+                "createdAt": "2025-08-16T16:41:02.489Z",
+                "updatedAt": "2025-08-25T13:58:52.810Z",
+                "media": [
+                    {
+                        "url": "https://ik.imagekit.io/abbsumfdi/uploads/Screenshot_from_2025-04-02_19-00-59_UeKXkPG4N.png",
+                        "type": "Image"
+                    }
+                ],
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 1,
+                    "comments": 0
+                },
+                "likes": [
+                    {
+                        "likedById": "688e40a7c5ad9efe521bd2c0"
+                    }
+                ],
+                "savedBy": []
+            },
+            {
+                "id": "68516b38c5ad9efe521bd2ad",
+                "userId": "683d40a9c5ad9efe521bd2a7",
+                "text": "hellocheck2",
+                "visibility": "Public",
+                "views": 3,
+                "shares": 0,
+                "createdAt": "2025-06-17T13:18:48.381Z",
+                "updatedAt": "2025-08-25T14:34:16.293Z",
+                "media": [
+                    {
+                        "url": "https://ik.imagekit.io/abbsumfdi/uploads/Screenshot_from_2025-04-02_19-00-59_UeKXkPG4N.png",
+                        "type": "Image"
+                    }
+                ],
+                "user": {
+                    "userId": "683d40a9c5ad9efe521bd2a7",
+                    "username": "user2354",
+                    "profilePic": null
+                },
+                "_count": {
+                    "likes": 1,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": [
+                    {
+                        "userId": "688e40a7c5ad9efe521bd2c0"
+                    }
+                ]
+            },
+            {
+                "id": "68a067e3c1cf6d4b5f43512c",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "text": "hellocheck",
+                "visibility": "Public",
+                "views": 3,
+                "shares": 0,
+                "createdAt": "2025-08-16T11:13:39.519Z",
+                "updatedAt": "2025-08-25T14:39:26.532Z",
+                "media": [
+                    {
+                        "url": "https://ik.imagekit.io/abbsumfdi/uploads/Screenshot_from_2025-04-02_19-00-59_UeKXkPG4N.png",
+                        "type": "Image"
+                    }
+                ],
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 1,
+                    "comments": 0
+                },
+                "likes": [
+                    {
+                        "likedById": "688e40a7c5ad9efe521bd2c0"
+                    }
+                ],
+                "savedBy": []
+            },
+            {
+                "id": "68a4bf0dd455c16db5e382e7",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "text": "hellocheck",
+                "visibility": "Public",
+                "views": 4,
+                "shares": 0,
+                "createdAt": "2025-08-19T18:14:37.456Z",
+                "updatedAt": "2025-08-25T14:38:52.035Z",
+                "media": [
+                    {
+                        "url": "https://ik.imagekit.io/3b5vdaqok0/uploads/1000069807_v8wEM7TSw.jpg",
+                        "type": "Image"
+                    }
+                ],
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 1,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": []
+            },
+            {
+                "id": "68a485ebd455c16db5e382d7",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "text": "hellocheck",
+                "visibility": "Public",
+                "views": 2,
+                "shares": 0,
+                "createdAt": "2025-08-19T14:10:51.607Z",
+                "updatedAt": "2025-08-25T14:12:21.334Z",
+                "media": [],
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 0,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": []
+            },
+            {
+                "id": "68a37e09d455c16db5e382d5",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "text": "hellocheck",
+                "visibility": "Public",
+                "views": 2,
+                "shares": 0,
+                "createdAt": "2025-08-18T19:24:57.201Z",
+                "updatedAt": "2025-08-25T13:59:03.038Z",
+                "media": [],
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 0,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": []
+            },
+            {
+                "id": "68a31979d455c16db5e382d1",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "text": "hellocheck",
+                "visibility": "Public",
+                "views": 5,
+                "shares": 0,
+                "createdAt": "2025-08-18T12:15:53.415Z",
+                "updatedAt": "2025-08-25T14:39:26.531Z",
+                "media": [
+                    {
+                        "url": "https://ik.imagekit.io/3b5vdaqok0/uploads/1000069807_v4jYUV5VR.jpg",
+                        "type": "Image"
+                    },
+                    {
+                        "url": "https://ik.imagekit.io/3b5vdaqok0/uploads/1000069797_ZRCTSiseL.jpg",
+                        "type": "Image"
+                    }
+                ],
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 1,
+                    "comments": 0
+                },
+                "likes": [
+                    {
+                        "likedById": "688e40a7c5ad9efe521bd2c0"
+                    }
+                ],
+                "savedBy": []
+            },
+            {
+                "id": "68516d4cc5ad9efe521bd2b0",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "text": "hellocheck2",
+                "visibility": "Public",
+                "views": 2,
+                "shares": 0,
+                "createdAt": "2025-06-17T13:27:40.923Z",
+                "updatedAt": "2025-08-25T14:00:53.246Z",
+                "media": [
+                    {
+                        "url": "https://ik.imagekit.io/abbsumfdi/uploads/Screenshot_from_2025-04-02_19-00-59_UeKXkPG4N.png",
+                        "type": "Image"
+                    }
+                ],
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 0,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": []
+            },
+            {
+                "id": "68a33039d455c16db5e382d4",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "text": "hellocheck",
+                "visibility": "Public",
+                "views": 2,
+                "shares": 0,
+                "createdAt": "2025-08-18T13:52:57.396Z",
+                "updatedAt": "2025-08-25T13:59:03.879Z",
+                "media": [],
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 1,
+                    "comments": 0
+                },
+                "likes": [
+                    {
+                        "likedById": "688e40a7c5ad9efe521bd2c0"
+                    }
+                ],
+                "savedBy": [
+                    {
+                        "userId": "688e40a7c5ad9efe521bd2c0"
+                    }
+                ]
+            },
+            {
+                "id": "68a0c0ad70d922e8950ac2a0",
+                "userId": "682f3b08c5ad9efe521bd2a5",
+                "text": "hellocheck",
+                "visibility": "Public",
+                "views": 3,
+                "shares": 0,
+                "createdAt": "2025-08-16T17:32:29.815Z",
+                "updatedAt": "2025-08-25T14:34:16.283Z",
+                "media": [],
+                "user": {
+                    "userId": "682f3b08c5ad9efe521bd2a5",
+                    "username": "Harsh",
+                    "profilePic": "https://example.com/profile-pic.jpg"
+                },
+                "_count": {
+                    "likes": 1,
+                    "comments": 0
+                },
+                "likes": [
+                    {
+                        "likedById": "688e40a7c5ad9efe521bd2c0"
+                    }
+                ],
+                "savedBy": [
+                    {
+                        "userId": "688e40a7c5ad9efe521bd2c0"
+                    }
+                ]
+            },
+            {
+                "id": "688e18b0c5ad9efe521bd2be",
+                "userId": "688da64ec5ad9efe521bd2b6",
+                "text": "hellocheck",
+                "visibility": "Public",
+                "views": 3,
+                "shares": 0,
+                "createdAt": "2025-08-02T13:54:56.084Z",
+                "updatedAt": "2025-08-25T13:59:02.437Z",
+                "media": [
+                    {
+                        "url": "https://ik.imagekit.io/abbsumfdi/uploads/Screenshot_from_2025-04-02_19-00-59_UeKXkPG4N.png",
+                        "type": "Image"
+                    }
+                ],
+                "user": {
+                    "userId": "688da64ec5ad9efe521bd2b6",
+                    "username": "user1234",
+                    "profilePic": null
+                },
+                "_count": {
+                    "likes": 0,
+                    "comments": 0
+                },
+                "likes": [],
+                "savedBy": []
+            }
+        ]
+    }
+}
