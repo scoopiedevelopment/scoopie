@@ -1,7 +1,7 @@
-import React from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 export default function PrivacyPolicy() {
   const router = useRouter();
@@ -57,33 +57,33 @@ export default function PrivacyPolicy() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF", padding: 20 },
+  container: { flex: 1, backgroundColor: '#FFFFFF', padding: 20 },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 30,
     marginBottom: 20,
   },
   headerTitle: {
     flex: 1,
-    textAlign: "center",
-    fontFamily: "Inter",
-    fontWeight: "500",
+    textAlign: 'center',
+    fontFamily: 'Inter',
+    fontWeight: '500',
     fontSize: 23,
     lineHeight: 40,
     letterSpacing: -0.5,
     marginRight: 24, // to keep text center because of back icon
   },
   sectionTitle: {
-    fontFamily: "Inter",
-    fontWeight: "600",
+    fontFamily: 'Inter',
+    fontWeight: '600',
     fontSize: 20,
     marginTop: 20,
     marginBottom: 10,
   },
   paragraph: {
-    fontFamily: "Poppins",
-    fontWeight: "400",
+    fontFamily: 'Poppins',
+    fontWeight: '400',
     fontSize: 16,
     lineHeight: 26,
     letterSpacing: -0.5,

@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(/C:\\Users\\vidit\\Desktop\\work\\Scoopie\\scoopie\\server/**)",
+      "Read(/C:\\Users\\vidit\\Desktop\\work\\Scoopie\\scoopie\\server\\src\\router/**)",
+      "Read(/C:\\Users\\vidit\\Desktop\\work\\Scoopie\\scoopie\\server\\src\\router/**)",
+      "Read(/C:\\Users\\vidit\\Desktop\\work\\Scoopie\\scoopie\\server\\src\\router/**)",
+      "Read(/C:\\Users\\vidit\\Desktop\\work\\Scoopie\\scoopie\\server\\src\\router/**)",
+      "Read(/C:\\Users\\vidit\\Desktop\\work\\Scoopie\\scoopie\\server\\src\\router/**)",
+      "Read(/C:\\Users\\vidit\\Desktop\\work\\Scoopie\\scoopie\\server\\src\\router/**)",
+      "Read(/C:\\Users\\vidit\\Desktop\\work\\Scoopie\\scoopie\\server\\src\\controller\\Profile/**)",
+      "Read(/C:\\Users\\vidit\\Desktop\\work\\Scoopie\\scoopie\\server\\src\\controller\\Saved/**)",
+      "Read(/C:\\Users\\vidit\\Desktop\\work\\Scoopie\\scoopie\\server\\src\\controller\\Authentication/**)",
+      "Read(/C:\\Users\\vidit\\Desktop\\work\\Scoopie\\scoopie\\server\\src\\controller\\Follow/**)",
+      "Read(/C:\\Users\\vidit\\Desktop\\work\\Scoopie\\scoopie\\server\\src\\controller\\Notification/**)",
+      "Read(/C:\\Users\\vidit\\Desktop\\work\\Scoopie\\scoopie\\server\\src\\schemas/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

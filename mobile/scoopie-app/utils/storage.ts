@@ -4,7 +4,7 @@ export const saveUserData = async (userToken, dataType, data) => {
   try {
     await AsyncStorage.setItem(`${userToken}_${dataType}`, JSON.stringify(data));
   } catch (e) {
-    console.error("Failed to save user data:", e);
+    console.error('Failed to save user data:', e);
   }
 };
 
@@ -13,7 +13,7 @@ export const getUserData = async (userToken, dataType) => {
     const data = await AsyncStorage.getItem(`${userToken}_${dataType}`);
     return data ? JSON.parse(data) : [];
   } catch (e) {
-    console.error("Failed to load user data:", e);
+    console.error('Failed to load user data:', e);
     return [];
   }
 };

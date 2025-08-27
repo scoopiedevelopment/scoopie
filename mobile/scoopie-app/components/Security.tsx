@@ -1,7 +1,7 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 export default function Security() {
   const router = useRouter();
@@ -68,48 +68,48 @@ export default function Security() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFF", padding: 20 },
+  container: { flex: 1, backgroundColor: '#FFF', padding: 20 },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 40,
     marginBottom: 20,
   },
   headerTitle: {
     flex: 1,
-    textAlign: "center",
-    fontFamily: "Inter",
-    fontWeight: "500",
+    textAlign: 'center',
+    fontFamily: 'Inter',
+    fontWeight: '500',
     fontSize: 23,
     letterSpacing: -0.5,
     marginRight: 24,
     lineHeight: 40,
   },
   sectionTitle: {
-    fontFamily: "Inter",
-    fontWeight: "500",
+    fontFamily: 'Inter',
+    fontWeight: '500',
     fontSize: 20,
     marginVertical: 15,
     marginLeft: 5,
   },
   securityHeading: {
    
-    color: "000000",
+    color: '000000',
     paddingVertical: 5,
     paddingHorizontal: 10,
     borderRadius: 5,
-    width: "auto",
-    alignSelf: "flex-start",
+    width: 'auto',
+    alignSelf: 'flex-start',
   },
   row: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginVertical: 12,
   },
   label: {
-    fontFamily: "Inter",
-    fontWeight: "400",
+    fontFamily: 'Inter',
+    fontWeight: '400',
     fontSize: 18,
     lineHeight: 40,
     letterSpacing: -0.41,
