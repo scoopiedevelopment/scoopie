@@ -11,6 +11,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Modal,
+  Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,9 +22,10 @@ import VideoPreview from '@/components/common/VideoPreview';
 import { useRouter } from 'expo-router';
 import { createClip, createPost, uploadImage } from '@/api/uploadService';
 import { getProfile } from '@/api/profileService';
-
+import { createStory } from '@/api/storyService';
+const { width, height } = Dimensions.get("window");
 export default function SecondScreen() {
-
+  const [isVisible, setIsVisible] = useState(false);
   const navigation = useNavigation();
   const [postText, setPostText] = useState('');
   const [profile, setProfile] = useState<any>(null);
@@ -43,31 +46,6 @@ export default function SecondScreen() {
     ...(videoUrl ? [videoUrl] : []),
   ];
 
-  const handlePost = async () => {
-    try {
-      if (videoUrl) {
-        const result = await createClip(videoUrl, postText || '');
-      }
-
-      // Handle captured image from camera
-      // if (capturedImage) {
-      //   const uploadResult = await uploadImage(capturedImage);
-      //   if (uploadResult.success && uploadResult.data.urls?.length > 0) {
-      //     const result = await createPost(uploadResult.data.urls, postText || '');
-      //   }
-      // }
-
-      if (imageUrls.length > 0) {
-        const result = await createPost(imageUrls, postText || '');
-      }
-
-      router.replace('/(tabs)/tab1');
-    } catch (error) {
-      console.error('Error while posting ❌:', error);
-    }
-  };
-
-
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -80,8 +58,43 @@ export default function SecondScreen() {
       }
     };
 
-    fetchProfile(); 
+    fetchProfile();
   }, []);
+
+
+  const handlePost = async () => {
+    try {
+      if (videoUrl) {
+        await createClip(videoUrl, postText || "");
+      }
+
+      if (imageUrls.length > 0) {
+        await createPost(imageUrls, postText || "");
+      }
+
+      setIsVisible(false);
+      router.replace("/(tabs)/tab1");
+    } catch (error) {
+      console.error("Error while posting ❌:", error);
+    }
+  };
+
+  const handleStory = async () => {
+    try {
+      const storyUrl = videoUrl || imageUrls[0];
+      const mediaType = videoUrl ? "Video" : "Image";
+
+      await createStory({
+        mediaUrl: storyUrl,
+        mediaType: mediaType,
+      });
+
+      setIsVisible(false);
+      router.replace("/(tabs)/tab1");
+    } catch (error) {
+      console.error("Error while creating story ❌:", error);
+    }
+  };
 
   return (
     <ScreenWrapper gradient>
@@ -102,7 +115,7 @@ export default function SecondScreen() {
 
           <Text style={styles.headerTitle}>Text</Text>
 
-          <TouchableOpacity style={styles.postBtn} onPress={handlePost}>
+          <TouchableOpacity style={styles.postBtn} onPress={() => setIsVisible(true)}>
             <Text style={styles.postBtnText}>Post</Text>
           </TouchableOpacity>
         </LinearGradient>
@@ -153,6 +166,33 @@ export default function SecondScreen() {
             contentContainerStyle={{ paddingHorizontal: 15 }}
           />
         </View>
+        <Modal
+          animationType="slide"
+          transparent
+          visible={isVisible}
+          onRequestClose={() => setIsVisible(false)}
+        >
+          <View style={styles.modalBackground}>
+            <View style={styles.modalContainer}>
+              <Text style={styles.title}>Choose Option</Text>
+
+              <TouchableOpacity style={styles.optionButton} onPress={handlePost}>
+                <Text style={styles.optionText}>Post</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.optionButton} onPress={handleStory}>
+                <Text style={styles.optionText}>Story</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setIsVisible(false)}
+              >
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </KeyboardAvoidingView>
     </ScreenWrapper>
   );
@@ -173,6 +213,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 20,
   },
+  modalBackground: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.3)",
+  },
+  modalContainer: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    width: width,
+    alignItems: "center",
+  },
+  title: { fontSize: 18, fontWeight: "bold", marginBottom: 15 },
+  optionButton: {
+    width: "100%",
+    backgroundColor: "#f1f1f1",
+    paddingVertical: 12,
+    borderRadius: 10,
+    marginVertical: 6,
+    alignItems: "center",
+  },
+  optionText: { fontSize: 16, color: "#333" },
+  cancelButton: {
+    marginTop: 10,
+    paddingVertical: 10,
+    alignItems: "center",
+    width: "100%",
+  },
+  cancelText: { fontSize: 16, color: "red" },
   postBtnText: { color: '#fff', fontWeight: '600' },
   mainContent: {
     flex: 1,

@@ -4,7 +4,7 @@ export type Media = {
 
 export type User = {
   userId?: string;
-  id?: string;     
+  id?: string;
   username: string;
   profilePic: string | null;
 };
@@ -24,6 +24,8 @@ export type PostFeed = {
     likes: number;
     comments: number;
   };
+  likes: [];
+  savedBy: [];
 };
 
 export type PostFeedResponse = {

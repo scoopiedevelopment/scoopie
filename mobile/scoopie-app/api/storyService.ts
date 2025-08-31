@@ -1,5 +1,5 @@
 import apiClient from './apiClient';
-import { StoryResponse } from '@/models/StoryModel';
+import { CreateStoryRequest, CreateStoryResponse, StoryResponse } from '@/models/StoryModel';
 
 export const getStories = async (page: number) => {
   try {
@@ -10,3 +10,17 @@ export const getStories = async (page: number) => {
     throw error;
   }
 };
+
+export const createStory = async (payload: CreateStoryRequest) => {
+  try {
+    const response = await apiClient.post<CreateStoryResponse>(
+      '/story/create',
+      payload
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error('Error creating story:', error?.response || error);
+    throw error;
+  }
+};
+

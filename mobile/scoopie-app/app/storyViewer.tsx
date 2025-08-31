@@ -10,9 +10,11 @@ import {
     Text,
     ActivityIndicator,
 } from 'react-native';
-import { VideoView, useVideoPlayer } from 'expo-video'; 
+import { VideoView, useVideoPlayer } from 'expo-video';
 import { getStories } from '@/api/storyService';
 import { UserStory } from '@/models/StoryModel';
+import CreateStoryButton from './createStoryButton';
+import { getProfile } from '@/api/profileService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -21,21 +23,22 @@ const StoryViewer = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [currentUserIndex, setCurrentUserIndex] = useState(0);
     const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
-
     const [viewedUserIds, setViewedUserIds] = useState<string[]>([]);
     const [page, setPage] = useState(1);
     const [hasNext, setHasNext] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [isMuted, setIsMuted] = useState(true);
+    const [profileImg,setProfileImg] = useState<string|null>("")
 
     const storyTimeout = useRef<number | null>(null);
 
-    const currentStory =
-        stories[currentUserIndex]?.stories?.[currentStoryIndex] || null;
+    const currentStory = stories[currentUserIndex]?.stories?.[currentStoryIndex] || null;
     const player = useVideoPlayer(
         currentStory?.mediaUrl || '',
         (player) => {
-            player.loop = true;
-            player.play(); 
+            player.loop = false;
+            player.muted = isMuted;
+            player.play();
         }
     );
 
@@ -57,42 +60,58 @@ const StoryViewer = () => {
         }
     };
 
+     const fetchProfileData = async () => {
+        try {
+          const data = await getProfile();
+          setProfileImg(data.data.profile.profilePic)
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
     useEffect(() => {
         fetchStories(1);
+        fetchProfileData()
     }, []);
 
     useEffect(() => {
         if (!currentStory) return;
-        if (storyTimeout.current) {
-            clearTimeout(storyTimeout.current);
-        }
+
+        if (storyTimeout.current) clearTimeout(storyTimeout.current);
+
         if (!isVideo(currentStory.mediaUrl)) {
             storyTimeout.current = setTimeout(() => {
                 nextStory();
-            }, 5000);
+            }, 4000);
         }
+
         if (isVideo(currentStory.mediaUrl) && player) {
             const sub = player.addListener('statusChange', (payload) => {
                 const status = payload.status as any;
-
                 if (status?.didJustFinish) {
-                    nextStory();
+
+                    if (stories[currentUserIndex]?.stories?.length > currentStoryIndex + 1) {
+                        setCurrentStoryIndex((prev) => prev + 1);
+                    } else if (currentUserIndex + 1 < stories.length) {
+                        setCurrentUserIndex((prev) => prev + 1);
+                        setCurrentStoryIndex(0);
+                    } else {
+                        closeStory();
+                    }
                 }
             });
 
             return () => sub.remove();
         }
-    }, [currentStoryIndex, currentUserIndex, currentStory]);
+    }, [currentStoryIndex, currentUserIndex, currentStory, isMuted]);
 
 
-    const openStory = (userIndex: number) => {
-        setCurrentUserIndex(userIndex);
-        setCurrentStoryIndex(0);
-        setModalVisible(true);
-    };
 
     const closeStory = () => {
         const userStories = stories[currentUserIndex]?.stories || [];
+
 
         if (currentStoryIndex === userStories.length - 1) {
             const viewedUserId = stories[currentUserIndex].userId;
@@ -101,13 +120,25 @@ const StoryViewer = () => {
             }
         }
 
+        if (player) {
+            player.muted = true;
+            player.pause();
+        }
+
         setModalVisible(false);
+        setIsMuted(true);
         if (storyTimeout.current) clearTimeout(storyTimeout.current);
+    };
+
+
+    const openStory = (userIndex: number) => {
+        setCurrentUserIndex(userIndex);
+        setCurrentStoryIndex(0);
+        setModalVisible(true);
     };
 
     const nextStory = () => {
         const userStories = stories[currentUserIndex].stories;
-
         if (currentStoryIndex + 1 < userStories.length) {
             setCurrentStoryIndex((prev) => prev + 1);
         } else {
@@ -115,7 +146,6 @@ const StoryViewer = () => {
             if (!viewedUserIds.includes(viewedUserId)) {
                 setViewedUserIds((prev) => [...prev, viewedUserId]);
             }
-
             if (currentUserIndex + 1 < stories.length) {
                 setCurrentUserIndex((prev) => prev + 1);
                 setCurrentStoryIndex(0);
@@ -125,11 +155,30 @@ const StoryViewer = () => {
         }
     };
 
+    const toggleMute = () => {
+        setIsMuted((prev) => !prev);
+        if (player) {
+            player.muted = !isMuted;
+        }
+    };
+
     const isVideo = (url: string) =>
         url?.endsWith('.mp4') || url?.endsWith('.mov') || url?.endsWith('.mkv');
 
+    useEffect(() => {
+        if (!modalVisible && player) {
+            player.pause();
+            player.muted = true;
+        }
+    }, [modalVisible]);
+
+
+
+
+
     return (
-        <View style={{ backgroundColor: 'white', justifyContent: 'center' }}>
+        <View style={{ backgroundColor: 'white', justifyContent: 'center', flexDirection: 'row', paddingLeft: 10 }}>
+            <CreateStoryButton userImage={profileImg}/>
             <FlatList
                 data={stories}
                 horizontal
@@ -177,7 +226,7 @@ const StoryViewer = () => {
                         {isVideo(currentStory?.mediaUrl) ? (
                             <VideoView
                                 style={styles.storyImage}
-                                player={player} 
+                                player={player}
                                 allowsFullscreen
                                 allowsPictureInPicture
                                 nativeControls={false}
@@ -190,6 +239,7 @@ const StoryViewer = () => {
                             />
                         )}
 
+                        {/* Progress Bar */}
                         <View style={styles.progressBarContainer}>
                             {stories[currentUserIndex]?.stories.map((story, i) => (
                                 <View
@@ -199,17 +249,16 @@ const StoryViewer = () => {
                                         {
                                             width: `${100 / stories[currentUserIndex].stories.length}%`,
                                             backgroundColor:
-                                                i < currentStoryIndex
+                                                i <= currentStoryIndex
                                                     ? '#fff'
-                                                    : i === currentStoryIndex
-                                                        ? '#fff'
-                                                        : 'rgba(255,255,255,0.3)',
+                                                    : 'rgba(255,255,255,0.3)',
                                         },
                                     ]}
                                 />
                             ))}
                         </View>
 
+                        {/* User Info */}
                         <View style={styles.userInfoContainer}>
                             <Image
                                 source={{
@@ -224,9 +273,19 @@ const StoryViewer = () => {
                             </Text>
                         </View>
 
+                        {/* Close Button */}
                         <TouchableOpacity style={styles.closeButton} onPress={closeStory}>
                             <Text style={{ color: '#fff', fontSize: 22 }}>✕</Text>
                         </TouchableOpacity>
+
+                        {/* Mute/Unmute Button */}
+                        {isVideo(currentStory?.mediaUrl) && (
+                            <TouchableOpacity style={styles.muteButton} onPress={toggleMute}>
+                                <Text style={{ color: '#fff', fontSize: 16 }}>
+                                    {isMuted ? 'Unmute' : 'Mute'}
+                                </Text>
+                            </TouchableOpacity>
+                        )}
                     </TouchableOpacity>
                 </View>
             </Modal>
@@ -297,6 +356,14 @@ const styles = StyleSheet.create({
         height: 3,
         marginHorizontal: 1,
         borderRadius: 2,
+    },
+    muteButton: {
+        position: 'absolute',
+        bottom: 50,
+        right: 20,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        padding: 6,
+        borderRadius: 6,
     },
 });
 

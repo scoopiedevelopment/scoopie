@@ -32,3 +32,15 @@ export interface StoryResponse {
     pagination: Pagination;
   };
 }
+
+export interface CreateStoryRequest {
+  mediaUrl: string;
+  mediaType: string;
+}
+
+export interface CreateStoryResponse {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data: any;
+}
