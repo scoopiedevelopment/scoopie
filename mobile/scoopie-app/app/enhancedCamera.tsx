@@ -733,8 +733,20 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
           mediaType: capturedMedia.type === 'video' ? 'Video' : 'Image',
         });
         console.log('Story created successfully:', storyResponse);
-        onClose();
-        router.replace("/(tabs)/tab1");
+        
+        // Show success message
+        Alert.alert(
+          'Success!', 
+          'Your story has been uploaded successfully!',
+          [{ 
+            text: 'OK',
+            onPress: () => {
+              // Close camera and navigate back
+              onClose();
+              router.replace("/(tabs)/tab1");
+            }
+          }]
+        );
       } else if (currentMode === 'post') {
         // Navigate to post creation screen
         router.push({

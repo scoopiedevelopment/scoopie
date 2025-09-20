@@ -39,6 +39,7 @@ export default function HomeScreen() {
   const [storyPage, setStoryPage] = useState<number>(1);
   const [storyHasMore, setStoryHasMore] = useState<boolean>(true);
   const [stories, setStories] = useState<UserStory[]>([]);
+  const [storyRefreshTrigger, setStoryRefreshTrigger] = useState<number>(0);
 
   // 🔹 Track already viewed post IDs so same post ka API bar-bar na hit ho
   const viewedIds = useRef<Set<string>>(new Set());
@@ -52,7 +53,12 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       console.log('Home screen focused, refreshing stories...');
-      loadStories(1);
+      // Trigger immediate refresh by incrementing the trigger
+      setStoryRefreshTrigger(prev => prev + 1);
+      // Also refresh stories directly as backup with minimal delay
+      setTimeout(() => {
+        loadStories(1);
+      }, 200);
     }, [])
   );
 
@@ -104,35 +110,43 @@ export default function HomeScreen() {
 
   const loadStories = async (pageNumber: number) => {
     try {
+      console.log('Loading stories for page:', pageNumber);
       const res = await getStories(pageNumber);
       
+      console.log('Stories response:', res);
+      console.log('Response type:', typeof res);
+      console.log('Response keys:', res ? Object.keys(res) : 'res is null/undefined');
+      
       if (res?.success) {
-        // Server now returns raw stories array, need to group them by user
-        const rawStories = res.data || [];
+        // Server returns grouped stories directly
+        const responseData = res.data || {};
+        const userStories = responseData.stories || [];
+        const pagination = responseData.pagination || {};
         
-        // Group stories by user
-        const userStoriesMap = new Map();
-        rawStories.forEach((story: any) => {
-          const userId = story.userId;
-          if (!userStoriesMap.has(userId)) {
-            userStoriesMap.set(userId, {
-              userId: story.user?.userId || story.userId,
-              username: story.user?.username || 'Unknown',
-              profilePic: story.user?.profilePic || null,
-              stories: []
-            });
-          }
-          userStoriesMap.get(userId).stories.push({
-            id: story.id,
-            userId: story.userId,
-            mediaUrl: story.mediaUrl,
-            mediaType: story.mediaType,
-            createdAt: story.createdAt,
-            expiresAt: story.expiresAt,
+        console.log('Response data from server:', responseData);
+        console.log('User stories from server:', userStories);
+        console.log('Pagination from server:', pagination);
+        console.log('User stories type:', typeof userStories);
+        console.log('User stories is array:', Array.isArray(userStories));
+        console.log('Number of user story groups:', userStories.length);
+        
+        if (!Array.isArray(userStories)) {
+          console.error('User stories is not an array:', userStories);
+          setStoryHasMore(false);
+          return;
+        }
+        
+        // Log each user story group structure
+        userStories.forEach((userStory, index) => {
+          console.log(`User story group ${index}:`, {
+            userId: userStory.userId,
+            username: userStory.username,
+            profilePic: userStory.profilePic,
+            individualStoriesCount: userStory.stories ? userStory.stories.length : 0
           });
         });
         
-        const userStories = Array.from(userStoriesMap.values());
+        console.log('Setting stories:', userStories);
         
         if (pageNumber === 1) {
           setStories(userStories);
@@ -140,13 +154,26 @@ export default function HomeScreen() {
           setStories((prev) => [...prev, ...userStories]);
         }
         
-        // Simple pagination logic - if we got fewer stories than expected, no more pages
-        setStoryHasMore(rawStories.length >= 20);
+        // Use pagination info from server if available
+        if (pagination && typeof pagination === 'object' && 'hasNext' in pagination) {
+          setStoryHasMore(pagination.hasNext || false);
+        } else {
+          // Fallback pagination logic
+          setStoryHasMore(userStories.length >= 20);
+        }
         setStoryPage(pageNumber + 1);
+        
+        // If no stories found, log it
+        if (userStories.length === 0) {
+          console.log('No stories found for this page');
+        }
       } else {
+        console.log('Stories response not successful:', res);
         setStoryHasMore(false);
       }
     } catch (error: any) {
+      console.error('Error loading stories:', error);
+      
       // Handle specific error types
       if (error.message?.includes('Network connection failed')) {
         Alert.alert(
@@ -173,6 +200,9 @@ export default function HomeScreen() {
 
   const onRefresh = () => {
     loadData(1, true);
+    loadStories(1); // Also refresh stories on pull-to-refresh
+    // Trigger immediate story refresh
+    setStoryRefreshTrigger(prev => prev + 1);
   };
 
   // 🔹 API call jab user post scroll karke dekh le
@@ -260,7 +290,7 @@ export default function HomeScreen() {
   const renderHeader = () => {
     return <>
       <Header />
-      <StoryViewer />
+      <StoryViewer refreshTrigger={storyRefreshTrigger} />
     </>
 
   };

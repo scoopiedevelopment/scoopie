@@ -20,7 +20,11 @@ import { getProfile } from '@/api/profileService';
 
 const { width, height } = Dimensions.get('window');
 
-const StoryViewer = () => {
+interface StoryViewerProps {
+    refreshTrigger?: number;
+}
+
+const StoryViewer = ({ refreshTrigger }: StoryViewerProps) => {
     const [stories, setStories] = useState<UserStory[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [currentUserIndex, setCurrentUserIndex] = useState(0);
@@ -36,12 +40,31 @@ const StoryViewer = () => {
     const [videoError, setVideoError] = useState(false);
     const [playerKey, setPlayerKey] = useState(0); // Force player re-initialization
     const [viewedStories, setViewedStories] = useState<Set<string>>(new Set()); // Track viewed stories
+    const [videoPreloaded, setVideoPreloaded] = useState<Set<string>>(new Set()); // Track preloaded videos
 
     const storyTimeout = useRef<number | null>(null);
 
+    // Watch for refresh trigger and refresh stories immediately
+    useEffect(() => {
+        if (refreshTrigger && refreshTrigger > 0) {
+            console.log('StoryViewer: Refresh trigger detected, refreshing stories immediately...');
+            // Force immediate refresh without delay
+            refreshStories();
+            // Also trigger a direct fetch as backup
+            setTimeout(() => {
+                fetchStories(1);
+            }, 100);
+        }
+    }, [refreshTrigger]);
+
     // Define isVideo function before using it
-    const isVideo = (url: string) => {
+    const isVideo = (url: string, mediaType?: string) => {
         if (!url) return false;
+        
+        // First check mediaType if available (most reliable)
+        if (mediaType) {
+            return mediaType.toLowerCase() === 'video';
+        }
         
         // Remove query parameters for extension check
         const cleanUrl = url.split('?')[0];
@@ -51,35 +74,58 @@ const StoryViewer = () => {
                // Check for video MIME types in URL
                url.includes('video/') ||
                // Check for common video hosting patterns
-               url.includes('video') && (url.includes('mp4') || url.includes('mov'));
+               url.includes('video') && (url.includes('mp4') || url.includes('mov')) ||
+               // Check for ImageKit video patterns (even if extension is .jpg)
+               url.includes('imagekit.io') && url.includes('video') ||
+               // Fallback: if URL contains 'video' in filename, treat as video
+               url.toLowerCase().includes('video');
     };
 
     const currentStory = stories[currentUserIndex]?.stories?.[currentStoryIndex] || null;
+    
+    // Preload next video for smoother transitions
+    const nextStoryForPreload = stories[currentUserIndex]?.stories?.[currentStoryIndex + 1] || 
+                     stories[currentUserIndex + 1]?.stories?.[0] || null;
+    
+    const nextVideoPlayer = useVideoPlayer(
+        nextStoryForPreload?.mediaUrl && isVideo(nextStoryForPreload.mediaUrl, nextStoryForPreload.mediaType) ? nextStoryForPreload.mediaUrl : '',
+        (player) => {
+            if (nextStoryForPreload?.mediaUrl && isVideo(nextStoryForPreload.mediaUrl, nextStoryForPreload.mediaType)) {
+                console.log('Preloading next video:', nextStoryForPreload.mediaUrl);
+                try {
+                    player.muted = true;
+                    player.loop = false;
+                    setVideoPreloaded(prev => new Set([...prev, nextStoryForPreload.mediaUrl]));
+                } catch (error) {
+                    console.error('Error preloading next video:', error);
+                }
+            }
+        }
+    );
     
     // Create a completely new player instance for each story
     const player = useVideoPlayer(
         currentStory?.mediaUrl || '',
         (player) => {
             console.log('Player callback triggered for:', currentStory?.mediaUrl);
-            if (currentStory?.mediaUrl && isVideo(currentStory.mediaUrl)) {
+            console.log('Media type:', currentStory?.mediaType);
+            console.log('Is video detected:', isVideo(currentStory?.mediaUrl || '', currentStory?.mediaType));
+            console.log('Player key:', playerKey);
+            console.log('Modal visible:', modalVisible);
+            
+            if (currentStory?.mediaUrl && isVideo(currentStory.mediaUrl, currentStory.mediaType)) {
                 console.log('Initializing video player for:', currentStory.mediaUrl, 'with key:', playerKey);
                 try {
-                    // Reset all player properties
+                    // Optimize player settings for faster loading
                     player.loop = false;
                     player.muted = isMuted;
-                    player.currentTime = 0; // Always start from beginning
+                    player.currentTime = 0;
                     
-                    // Force a complete reset
-                    setTimeout(() => {
-                        try {
-                            player.pause();
-                            player.currentTime = 0;
-                            player.muted = isMuted;
-                            console.log('Player reset completed');
-                        } catch (error) {
-                            console.error('Error resetting player:', error);
-                        }
-                    }, 50);
+                    // Ensure video starts playing when modal is visible
+                    if (modalVisible) {
+                        console.log('Modal is visible, starting video playback');
+                        player.play();
+                    }
                     
                     console.log('Player settings applied');
                 } catch (error) {
@@ -87,6 +133,8 @@ const StoryViewer = () => {
                 }
             } else {
                 console.log('Skipping video player initialization - not a video or no URL');
+                console.log('URL:', currentStory?.mediaUrl);
+                console.log('MediaType:', currentStory?.mediaType);
             }
         }
     );
@@ -95,35 +143,36 @@ const StoryViewer = () => {
         if (loading || !hasNext) return;
         setLoading(true);
         try {
+            console.log('StoryViewer: Fetching stories for page:', pageNo);
             const response = await getStories(pageNo);
             
+            console.log('StoryViewer: Stories response:', response);
+            
             if (response.success) {
-                // Server now returns raw stories array, need to group them by user
-                const rawStories = response.data || [];
+                // Server returns grouped stories directly
+                const responseData = response.data || {};
+                const userStories = responseData.stories || [];
+                const pagination = responseData.pagination || {};
                 
-                // Group stories by user
-                const userStoriesMap = new Map();
-                rawStories.forEach((story: any) => {
-                    const userId = story.userId;
-                    if (!userStoriesMap.has(userId)) {
-                        userStoriesMap.set(userId, {
-                            userId: story.user?.userId || story.userId,
-                            username: story.user?.username || 'Unknown',
-                            profilePic: story.user?.profilePic || null,
-                            stories: []
-                        });
-                    }
-                    userStoriesMap.get(userId).stories.push({
-                        id: story.id,
-                        userId: story.userId,
-                        mediaUrl: story.mediaUrl,
-                        mediaType: story.mediaType,
-                        createdAt: story.createdAt,
-                        expiresAt: story.expiresAt,
+                console.log('StoryViewer: Response data from server:', responseData);
+                console.log('StoryViewer: User stories from server:', userStories);
+                console.log('StoryViewer: Number of user story groups:', userStories.length);
+                
+                if (!Array.isArray(userStories)) {
+                    console.error('StoryViewer: User stories is not an array:', userStories);
+                    setHasNext(false);
+                    return;
+                }
+                
+                // Log each user story group structure
+                userStories.forEach((userStory, index) => {
+                    console.log(`StoryViewer: User story group ${index}:`, {
+                        userId: userStory.userId,
+                        username: userStory.username,
+                        profilePic: userStory.profilePic,
+                        individualStoriesCount: userStory.stories ? userStory.stories.length : 0
                     });
                 });
-                
-                const userStories = Array.from(userStoriesMap.values());
                 
                 if (pageNo === 1) {
                     setStories(userStories);
@@ -131,13 +180,26 @@ const StoryViewer = () => {
                     setStories((prev) => [...prev, ...userStories]);
                 }
                 
-                // Simple pagination logic - if we got fewer stories than expected, no more pages
-                setHasNext(rawStories.length >= 20);
+                // Use pagination info from server if available
+                if (pagination && typeof pagination === 'object' && 'hasNext' in pagination) {
+                    setHasNext(pagination.hasNext || false);
+                } else {
+                    // Fallback pagination logic
+                    setHasNext(userStories.length >= 20);
+                }
                 setPage(pageNo + 1);
+                
+                // If no stories found, log it
+                if (userStories.length === 0) {
+                    console.log('StoryViewer: No stories found for this page');
+                }
             } else {
+                console.log('StoryViewer: Stories response not successful:', response);
                 setHasNext(false);
             }
         } catch (error: any) {
+            console.error('StoryViewer: Error fetching stories:', error);
+            
             // Handle specific error types
             if (error.message?.includes('Network connection failed')) {
                 Alert.alert(
@@ -167,42 +229,45 @@ const StoryViewer = () => {
     const refreshStories = async () => {
         setRefreshing(true);
         try {
+            console.log('StoryViewer: Refreshing stories...');
             const response = await getStories(1);
+            
+            console.log('StoryViewer: Refresh response:', response);
+            
             if (response.success) {
-                // Server now returns raw stories array, need to group them by user
-                const rawStories = response.data || [];
+                // Server returns grouped stories directly
+                const responseData = response.data || {};
+                const userStories = responseData.stories || [];
+                const pagination = responseData.pagination || {};
                 
-                // Group stories by user
-                const userStoriesMap = new Map();
-                rawStories.forEach((story: any) => {
-                    const userId = story.userId;
-                    if (!userStoriesMap.has(userId)) {
-                        userStoriesMap.set(userId, {
-                            userId: story.user?.userId || story.userId,
-                            username: story.user?.username || 'Unknown',
-                            profilePic: story.user?.profilePic || null,
-                            stories: []
-                        });
-                    }
-                    userStoriesMap.get(userId).stories.push({
-                        id: story.id,
-                        userId: story.userId,
-                        mediaUrl: story.mediaUrl,
-                        mediaType: story.mediaType,
-                        createdAt: story.createdAt,
-                        expiresAt: story.expiresAt,
-                    });
-                });
+                console.log('StoryViewer: Refresh - User stories from server:', userStories);
+                console.log('StoryViewer: Refresh - Number of user story groups:', userStories.length);
                 
-                const userStories = Array.from(userStoriesMap.values());
+                if (!Array.isArray(userStories)) {
+                    console.error('StoryViewer: Refresh - User stories is not an array:', userStories);
+                    return;
+                }
+                
                 setStories(userStories);
-                setHasNext(rawStories.length >= 20);
+                
+                // Use pagination info from server if available
+                if (pagination && typeof pagination === 'object' && 'hasNext' in pagination) {
+                    setHasNext(pagination.hasNext || false);
+                } else {
+                    setHasNext(userStories.length >= 20);
+                }
                 setPage(2);
                 setCurrentUserIndex(0);
                 setCurrentStoryIndex(0);
                 setViewedUserIds([]);
+                
+                console.log('StoryViewer: Stories refreshed successfully');
+            } else {
+                console.log('StoryViewer: Refresh - Stories response not successful:', response);
             }
         } catch (error: any) {
+            console.error('StoryViewer: Error refreshing stories:', error);
+            
             // Handle specific error types
             if (error.message?.includes('Network connection failed')) {
                 Alert.alert(
@@ -320,6 +385,18 @@ const StoryViewer = () => {
         }
     }, [currentStoryIndex, currentUserIndex, currentStory, isMuted]);
 
+    // Ensure video starts playing when modal becomes visible
+    useEffect(() => {
+        if (modalVisible && currentStory && isVideo(currentStory.mediaUrl, currentStory.mediaType) && player) {
+            console.log('Modal became visible, starting video playback for:', currentStory.mediaUrl);
+            try {
+                player.play();
+            } catch (error) {
+                console.error('Error starting video playback:', error);
+            }
+        }
+    }, [modalVisible, currentStory, player]);
+
 
 
     const closeStory = () => {
@@ -349,9 +426,27 @@ const StoryViewer = () => {
 
 
     const openStory = (userIndex: number) => {
+        console.log('Opening story for user index:', userIndex);
         setCurrentUserIndex(userIndex);
         setCurrentStoryIndex(0);
+        
+        // Reset video states when opening a story
+        setVideoLoading(false);
+        setVideoError(false);
+        setPlayerKey(prev => prev + 1); // Force player re-initialization
+        
         setModalVisible(true);
+        
+        // Log the first story details
+        const firstStory = stories[userIndex]?.stories?.[0];
+        if (firstStory) {
+            console.log('First story details:', {
+                id: firstStory.id,
+                mediaUrl: firstStory.mediaUrl,
+                mediaType: firstStory.mediaType,
+                isVideo: isVideo(firstStory.mediaUrl, firstStory.mediaType)
+            });
+        }
     };
 
     const nextStory = () => {
@@ -455,7 +550,9 @@ const StoryViewer = () => {
                 horizontal
                 keyExtractor={(item) => item.userId}
                 style={styles.storyList}
+                contentContainerStyle={styles.storyListContent}
                 showsHorizontalScrollIndicator={false}
+                showsVerticalScrollIndicator={false}
                 onEndReached={() => {
                     console.log('End reached, loading more stories...');
                     fetchStories(page);
@@ -534,7 +631,7 @@ const StoryViewer = () => {
                     
                     {/* Center content area */}
                     <View style={styles.centerContent}>
-                        {isVideo(currentStory?.mediaUrl) ? (
+                        {isVideo(currentStory?.mediaUrl, currentStory?.mediaType) ? (
                             <View style={[styles.storyImage, { backgroundColor: '#000' }]}>
                                 {videoLoading && (
                                     <View style={styles.loadingOverlay}>
@@ -560,7 +657,7 @@ const StoryViewer = () => {
                                 )}
                                 {currentStory?.mediaUrl && !videoError && (
                                     <VideoView
-                                        key={`video-${currentStory.id}-${playerKey}-${Date.now()}`} // Very unique key
+                                        key={`video-${currentStory.id}-${playerKey}`} // Simplified key for better performance
                                         style={styles.storyImage}
                                         player={player}
                                         allowsFullscreen={false}
@@ -573,11 +670,32 @@ const StoryViewer = () => {
                                         onLoad={() => {
                                             console.log('Video loaded successfully for story:', currentStory.id);
                                             setVideoLoading(false);
+                                            // Ensure video starts playing after load
+                                            if (player && modalVisible) {
+                                                try {
+                                                    player.play();
+                                                    console.log('Video playback started after load');
+                                                } catch (error) {
+                                                    console.error('Error starting video after load:', error);
+                                                }
+                                            }
                                         }}
                                         onError={(error) => {
                                             console.error('Video load error for story:', currentStory.id, error);
                                             setVideoLoading(false);
                                             setVideoError(true);
+                                        }}
+                                        onPlaybackStatusUpdate={(status) => {
+                                            console.log('Video playback status update:', status);
+                                            if (status.isLoaded && !status.isPlaying && modalVisible) {
+                                                // If video is loaded but not playing and modal is visible, start playing
+                                                try {
+                                                    player.play();
+                                                    console.log('Video playback started from status update');
+                                                } catch (error) {
+                                                    console.error('Error starting video from status update:', error);
+                                                }
+                                            }
                                         }}
                                     />
                                 )}
@@ -585,6 +703,8 @@ const StoryViewer = () => {
                                 <View style={styles.debugOverlay}>
                                     <Text style={styles.debugText}>
                                         Debug: {currentStory?.mediaUrl ? 'Has URL' : 'No URL'} | 
+                                        MediaType: {currentStory?.mediaType || 'None'} |
+                                        IsVideo: {isVideo(currentStory?.mediaUrl || '', currentStory?.mediaType) ? 'Yes' : 'No'} |
                                         Loading: {videoLoading ? 'Yes' : 'No'} | 
                                         Error: {videoError ? 'Yes' : 'No'} | 
                                         Key: {playerKey}
@@ -673,19 +793,38 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffffff',
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#e9ecef',
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+        borderBottomWidth: 0.5,
+        borderBottomColor: '#e1e5e9',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+        elevation: 2,
+        height: 100,
+        maxHeight: 100,
     },
     storyList: {
         flex: 1,
-        paddingLeft: 8,
+        paddingLeft: 12,
+        height: 84,
+        maxHeight: 84,
+    },
+    storyListContent: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: 84,
     },
     storyItem: {
         alignItems: 'center',
-        marginRight: 16,
-        width: 70,
+        marginRight: 20,
+        width: 75,
+        height: 84,
+        justifyContent: 'center',
     },
     storyAvatarContainer: {
         position: 'relative',
@@ -693,14 +832,22 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     profilePic: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
+        width: 64,
+        height: 64,
+        borderRadius: 32,
         backgroundColor: '#f8f9fa',
     },
     profilePicUnviewed: {
         borderWidth: 3,
-        borderColor: '#7B4DFF',
+        borderColor: '#333333',
+        shadowColor: '#333333',
+        shadowOffset: {
+            width: 0,
+            height: 0,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 4,
     },
     profilePicViewed: {
         borderWidth: 2,
@@ -720,20 +867,21 @@ const styles = StyleSheet.create({
         borderWidth: 2,
     },
     storyRingUnviewed: {
-        borderColor: '#7B4DFF',
+        borderColor: '#333333',
     },
     storyRingViewed: {
         borderColor: '#6c757d',
     },
     username: {
         textAlign: 'center',
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: '500',
-        marginTop: 6,
-        maxWidth: 70,
+        marginTop: 8,
+        maxWidth: 75,
+        lineHeight: 14,
     },
     usernameUnviewed: {
-        color: '#495057',
+        color: '#212529',
         fontWeight: '600',
     },
     usernameViewed: {
@@ -921,6 +1069,16 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 10,
         fontWeight: '600',
+    },
+    loadingSpinner: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.5)',
     },
 });
 

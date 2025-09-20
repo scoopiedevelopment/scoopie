@@ -29,7 +29,7 @@ export interface StoryResponse {
   message: string;
   data: {
     stories: UserStory[];
-    pagination: Pagination;
+    pagination?: Pagination;
   };
 }
 
