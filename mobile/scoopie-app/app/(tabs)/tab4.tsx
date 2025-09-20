@@ -5,14 +5,14 @@ import {
   FlatList,
   Dimensions,
   TouchableOpacity,
-  Modal,
-  TextInput,
   ActivityIndicator,
   StyleSheet,
+  Alert,
 } from "react-native";
 import { Video, ResizeMode } from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
-import { useIsFocused } from "@react-navigation/native"; // ✅ import
+import { useIsFocused } from "@react-navigation/native";
+import CommentModal from "@/components/CommentModal";
 
 import {
   getClipsFeed,
@@ -20,6 +20,11 @@ import {
   getComments,
   createComment,
 } from "@/api/clipService";
+import { 
+  organizeCommentsIntoNested,
+  createCommentReply,
+  getClipCommentReplies 
+} from '@/api/commentService';
 import { toggleSaveClip } from "@/api/savedService";
 import { shareVideo } from "@/utils/functions";
 
@@ -34,14 +39,15 @@ const ReelsScreen = () => {
   const [comments, setComments] = useState<any[]>([]);
   const [commentModalVisible, setCommentModalVisible] = useState(false);
   const [selectedClip, setSelectedClip] = useState<any>(null);
-  const [newComment, setNewComment] = useState("");
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentsRefreshing, setCommentsRefreshing] = useState(false);
   const [currentPlaying, setCurrentPlaying] = useState<string | null>(null);
   const [mute, setMute] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const videoRefs = useRef<{ [key: string]: Video | null }>({});
   const [userId, setUserId] = useState<string>("");
 
-  const isFocused = useIsFocused(); // ✅ check screen focus
+  const isFocused = useIsFocused();
 
   // fetch reels
   useEffect(() => {
@@ -69,7 +75,7 @@ const ReelsScreen = () => {
     }
   };
 
-  // ✅ pause all videos when screen unfocused
+  // pause all videos when screen unfocused
   useEffect(() => {
     if (!isFocused) {
       Object.values(videoRefs.current).forEach((video) => {
@@ -117,37 +123,211 @@ const ReelsScreen = () => {
 
   // comments handler
   const openComments = async (clip: any) => {
+    console.log("Opening comments for clip:", clip);
     setSelectedClip(clip);
     setCommentModalVisible(true);
+    setComments([]); // Clear previous comments
+    setCommentsLoading(true);
+    
     try {
       const response = await getComments(clip.id);
+      console.log("Comments response:", response);
       if (response.success) {
-        setComments(response.data);
+        // Filter out any null/undefined comments
+        const validComments = (response.data || []).filter((comment: any) => 
+          comment && comment.id && comment.commentBy
+        );
+        // Organize comments into nested structure on frontend
+        const organizedComments = organizeCommentsIntoNested(validComments);
+        setComments(organizedComments);
+        console.log("Comments organized and set:", organizedComments);
+        
+        // Log all comment IDs for debugging
+        console.log("🔍 DEBUG: All loaded comment IDs:");
+        organizedComments.forEach((comment, index) => {
+          console.log(`  Comment ${index}: ID = "${comment.id}", Comment = "${comment.comment}"`);
+        });
+      } else {
+        console.log("Failed to fetch comments:", response.message);
+        setComments([]);
       }
     } catch (err) {
       console.error("getComments error:", err);
+      setComments([]);
+    } finally {
+      setCommentsLoading(false);
     }
   };
 
-  const handleAddComment = async () => {
-    if (!newComment.trim() || !selectedClip) return;
+  const handleAddComment = async (text: string, parentCommentId?: string) => {
+    if (!selectedClip) {
+      console.log("Cannot add comment: selectedClip is null");
+      return;
+    }
+    
+    console.log("Adding comment:", text, "to clip:", selectedClip.id, "parent:", parentCommentId);
     try {
-      const response = await createComment(selectedClip.id, newComment);
+      let response;
+      if (parentCommentId) {
+        // This is a reply to a comment
+        console.log("Creating reply to comment:", parentCommentId);
+        response = await createCommentReply(parentCommentId, text);
+      } else {
+        // This is a top-level comment
+        console.log("Creating top-level comment");
+        response = await createComment(selectedClip.id, text, parentCommentId);
+      }
+      console.log("Create comment response:", response);
       if (response.success) {
-        setComments((prev) => [response.data, ...prev]);
-        setNewComment("");
+        console.log("Comment added successfully, refreshing comments...");
+        
+        // Refresh comments by fetching from API
+        try {
+          setCommentsRefreshing(true);
+          const refreshResponse = await getComments(selectedClip.id);
+          console.log("Refresh comments response:", refreshResponse);
+          if (refreshResponse.success) {
+            // Filter out any null/undefined comments
+            const validComments = (refreshResponse.data || []).filter((comment: any) => 
+              comment && comment.id && comment.commentBy
+            );
+            // Organize comments into nested structure on frontend
+            const organizedComments = organizeCommentsIntoNested(validComments);
+            setComments(organizedComments);
+            console.log("Comments refreshed and organized successfully:", organizedComments);
+          } else {
+            console.log("Failed to refresh comments:", refreshResponse.message);
+            // Fallback to optimistic update if refresh fails
+            if (parentCommentId) {
+              // This is a reply, update the parent comment's replies
+              setComments((prev) => 
+                prev.map(comment => 
+                  comment.id === parentCommentId 
+                    ? { 
+                        ...comment, 
+                        replies: [...(comment.replies || []), response.data].filter((reply: any) => 
+                          reply && reply.id && reply.commentBy
+                        )
+                      }
+                    : comment
+                )
+              );
+            } else {
+              // This is a top-level comment
+              if (response.data && response.data.id && response.data.commentBy) {
+                setComments((prev) => [response.data, ...prev]);
+              }
+            }
+          }
+        } catch (refreshError) {
+          console.error("Error refreshing comments:", refreshError);
+          // Fallback to optimistic update if refresh fails
+          if (parentCommentId) {
+            setComments((prev) => 
+              prev.map(comment => 
+                comment.id === parentCommentId 
+                  ? { 
+                      ...comment, 
+                      replies: [...(comment.replies || []), response.data].filter((reply: any) => 
+                        reply && reply.id && reply.commentBy
+                      )
+                    }
+                  : comment
+              )
+            );
+          } else {
+            if (response.data && response.data.id && response.data.commentBy) {
+              setComments((prev) => [response.data, ...prev]);
+            }
+          }
+        } finally {
+          setCommentsRefreshing(false);
+        }
+      } else {
+        console.log("Failed to create comment:", response.message);
+        throw new Error(response.message || "Failed to create comment");
       }
     } catch (err) {
       console.error("createComment error:", err);
+      throw err;
     }
   };
 
+  const handleLikeComment = async (commentId: string) => {
+    // TODO: Implement comment like functionality
+    console.log("Liking comment:", commentId);
+    // You can implement this based on your API
+  };
+
+  const handleViewReplies = async (commentId: string) => {
+    try {
+      console.log("🔍 DEBUG: Starting to view replies for comment ID:", commentId);
+      console.log("🔍 DEBUG: Comment ID type:", typeof commentId);
+      console.log("🔍 DEBUG: Comment ID length:", commentId?.length);
+      console.log("🔍 DEBUG: Comment ID value:", JSON.stringify(commentId));
+      console.log("🔍 DEBUG: This is the ID of the comment we want to get replies for");
+      console.log("🔍 DEBUG: Current comments state before API call:", comments);
+      
+      // Log all comment IDs in current state for comparison
+      console.log("🔍 DEBUG: All comment IDs in current state:");
+      comments.forEach((comment, index) => {
+        console.log(`  Comment ${index}: ID = "${comment.id}", Type = ${typeof comment.id}`);
+      });
+      
+      const response = await getClipCommentReplies(commentId, 1);
+      
+      console.log("🔍 DEBUG: API Response received:", response);
+      console.log("🔍 DEBUG: Response success:", response.success);
+      console.log("🔍 DEBUG: Response data:", response.data);
+      console.log("🔍 DEBUG: Response data length:", response.data?.length || 0);
+      
+      if (response.success) {
+        console.log("✅ DEBUG: API call successful, updating comments state");
+        
+        // Update the comments to include the fetched replies
+        setComments(prev => {
+          console.log("🔍 DEBUG: Previous comments state:", prev);
+          const updated = prev.map(comment => {
+            if (comment.id === commentId) {
+              console.log("🔍 DEBUG: Found matching comment, updating with replies:", response.data);
+              return { 
+                ...comment, 
+                replies: response.data || []
+              };
+            }
+            return comment;
+          });
+          console.log("🔍 DEBUG: Updated comments state:", updated);
+          return updated;
+        });
+        
+        console.log("✅ DEBUG: Comments state updated successfully");
+      } else {
+        console.log("❌ DEBUG: API call failed:", response.message);
+        console.log("❌ DEBUG: Full response:", response);
+        Alert.alert("Error", "Failed to load replies");
+      }
+    } catch (error: any) {
+      console.error("❌ DEBUG: Exception occurred:", error);
+      console.error("❌ DEBUG: Error details:", error?.message);
+      console.error("❌ DEBUG: Error stack:", error?.stack);
+      Alert.alert("Error", "Failed to load replies");
+    }
+  };
+
+  const handleCloseComments = () => {
+    setCommentModalVisible(false);
+    setSelectedClip(null);
+    setComments([]);
+    setCommentsLoading(false);
+    setCommentsRefreshing(false);
+  };
+
   // play/pause & auto-mute on scroll
-  const onViewableItemsChanged = useCallback(({ viewableItems }) => {
+  const onViewableItemsChanged = useCallback(({ viewableItems }: { viewableItems: any[] }) => {
     if (viewableItems.length > 0 && isFocused) {
       const clipId = viewableItems[0].item.id;
       setCurrentPlaying(clipId);
-      // setMute(true);
     }
   }, [isFocused]);
 
@@ -163,11 +343,13 @@ const ReelsScreen = () => {
           onLongPress={() => handleLike(item.id)}
         >
           <Video
-            ref={(ref) => (videoRefs.current[item.id] = ref)}
+            ref={(ref) => {
+              videoRefs.current[item.id] = ref;
+            }}
             source={{ uri: item.video }}
             style={styles.video}
             resizeMode={ResizeMode.COVER}
-            shouldPlay={isFocused && currentPlaying === item.id} // ✅ only play when screen focused
+            shouldPlay={isFocused && currentPlaying === item.id}
             isLooping
             isMuted={mute}
           />
@@ -230,54 +412,18 @@ const ReelsScreen = () => {
         viewabilityConfig={viewabilityConfig}
       />
 
-      {/* comments modal */}
-      <Modal
+      {/* Comments Modal */}
+      <CommentModal
         visible={commentModalVisible}
-        animationType="slide"
-        onRequestClose={() => setCommentModalVisible(false)}
-      >
-        <View style={{ flex: 1, padding: 16 }}>
-          <Text
-            style={{ fontWeight: "bold", fontSize: 16, marginBottom: 10 }}
-          >
-            Comments
-          </Text>
-          <FlatList
-            data={comments}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <View style={{ marginBottom: 10 }}>
-                <Text style={{ fontWeight: "bold" }}>
-                  {item.user?.username}
-                </Text>
-                <Text>{item.text}</Text>
-              </View>
-            )}
-          />
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <TextInput
-              placeholder="Add a comment..."
-              value={newComment}
-              onChangeText={setNewComment}
-              style={{
-                flex: 1,
-                borderWidth: 1,
-                borderColor: "#ccc",
-                borderRadius: 20,
-                paddingHorizontal: 10,
-              }}
-            />
-            <TouchableOpacity onPress={handleAddComment}>
-              <Ionicons
-                name="send"
-                size={24}
-                color="blue"
-                style={{ marginLeft: 10 }}
-              />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+        onClose={handleCloseComments}
+        comments={comments}
+        loading={commentsLoading}
+        refreshing={commentsRefreshing}
+        onAddComment={handleAddComment}
+        onLikeComment={handleLikeComment}
+        onViewReplies={handleViewReplies}
+        title="Comments"
+      />
     </View>
   );
 };

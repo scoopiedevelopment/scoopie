@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, Image, TouchableOpacity, StyleSheet, Modal } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import CustomCamera from "./customCamera"; // ✅ Import custom camera
+import EnhancedCamera from "./enhancedCamera"; // ✅ Import enhanced camera
 
 interface CreateStoryButtonProps {
   userImage?: string|null;
@@ -27,9 +27,9 @@ const CreateStoryButton: React.FC<CreateStoryButtonProps> = ({ userImage }) => {
         </View>
       </TouchableOpacity>
 
-      {/* ✅ Custom Camera Modal */}
+      {/* ✅ Enhanced Camera Modal */}
       <Modal visible={cameraOpen} animationType="slide">
-        <CustomCamera onClose={() => setCameraOpen(false)} />
+        <EnhancedCamera onClose={() => setCameraOpen(false)} mode="story" />
       </Modal>
     </>
   );

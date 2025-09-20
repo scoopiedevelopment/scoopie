@@ -55,14 +55,6 @@ export default function HomeScreen() {
         style={styles.topImage}
       />
 
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <MaterialIcons name="arrow-back-ios" size={22} color={theme.text} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.text }]}>
-          Settings
-        </Text>
-      </View>
 
       <View style={[styles.searchBar, { borderColor: theme.border, backgroundColor: theme.card }]}>
         <Ionicons name="search" size={23} color={theme.border} />
@@ -165,35 +157,13 @@ const styles = StyleSheet.create({
   },
   topImage: {
     width: '100%',
-    height: 224,
+    height: 180,
     borderBottomRightRadius: 10,
     borderBottomLeftRadius: 10,
   },
-  header: {
-    position: 'absolute',
-    top: 54,
-    left: 16,
-    right: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 8,
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    fontWeight: '500',
-    fontSize: 23,
-    marginRight: 40,
-  },
   searchBar: {
     position: 'absolute',
-    top: 114,
+    top: 140,
     left: 16,
     right: 16,
     flexDirection: 'row',
@@ -213,7 +183,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     paddingHorizontal: 16,
-    paddingTop: 60,
+    paddingTop: 30,
     marginTop: -30,
   },
   item: {

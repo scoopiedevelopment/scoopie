@@ -31,13 +31,13 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL || 'https://scoopie.ma
 
 // Mock API for development - Remove this when you have a real API
 const mockAuthAPI = {
-  register: async (email: string, password: string): Promise<AuthResponse> => {
+  register: async (email: string, password: string, username: string): Promise<AuthResponse> => {
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Simple validation
-    if (!email || !password) {
-      throw new Error('Email and password are required');
+    if (!email || !password || !username) {
+      throw new Error('Email, username and password are required');
     }
     
     // Mock successful registration
@@ -69,13 +69,13 @@ const mockAuthAPI = {
 
 // Real API Functions (use when you have a backend)
 const realAuthAPI = {
-  register: async (email: string, password: string): Promise<AuthResponse> => {
+  register: async (email: string, password: string, username: string): Promise<AuthResponse> => {
     const response = await fetch(`${API_BASE_URL}/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, username }),
     });
 
     if (!response.ok) {
@@ -241,6 +241,7 @@ export const LoginScreen: React.FC<{ onLoginSuccess: () => void; onSwitchToRegis
 // REGISTER SCREEN - Card-based Design
 export const RegisterScreen: React.FC<{ onRegisterSuccess: () => void; onSwitchToLogin: () => void }> = ({ onRegisterSuccess, onSwitchToLogin }) => {
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -253,6 +254,12 @@ export const RegisterScreen: React.FC<{ onRegisterSuccess: () => void; onSwitchT
       newErrors.email = 'Email is required';
     } else if (!validateEmail(email)) {
       newErrors.email = 'Please enter a valid email';
+    }
+
+    if (!username.trim()) {
+      newErrors.username = 'Username is required';
+    } else if (username.trim().length < 3) {
+      newErrors.username = 'Username must be at least 3 characters';
     }
 
     if (!password.trim()) {
@@ -276,7 +283,7 @@ export const RegisterScreen: React.FC<{ onRegisterSuccess: () => void; onSwitchT
 
     setLoading(true);
     try {
-      await authAPI.register(email.trim(), password);
+      await authAPI.register(email.trim(), password, username.trim());
       Alert.alert(
         '🎉 Success!',
         'Your account has been created successfully! Please sign in to continue.',
@@ -324,6 +331,22 @@ export const RegisterScreen: React.FC<{ onRegisterSuccess: () => void; onSwitchT
                 />
               </View>
               {errors.email && <Text style={registerStyles.errorText}>{errors.email}</Text>}
+            </View>
+
+            <View style={registerStyles.inputContainer}>
+              <View style={registerStyles.inputWrapper}>
+                <Text style={registerStyles.label}>👤</Text>
+                <TextInput
+                  style={[registerStyles.input, errors.username && registerStyles.inputError]}
+                  value={username}
+                  onChangeText={setUsername}
+                  placeholder="Choose a username"
+                  placeholderTextColor="#aaa"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+              {errors.username && <Text style={registerStyles.errorText}>{errors.username}</Text>}
             </View>
 
             <View style={registerStyles.inputContainer}>

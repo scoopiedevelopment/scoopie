@@ -13,6 +13,9 @@ import { Ionicons } from "@expo/vector-icons";
 import apiClient from "../../api/apiClient";
 import { getProfile } from '@/api/profileService';
 import { formatCount, calculateTimePeriod } from '@/utils/formatNumber';
+import CommentModal from '../CommentModal';
+import PostReplyModal from '../PostReplyModal';
+import { getPostComments, createPostComment, getPostCommentReplies, PostComment, organizeCommentsIntoNested } from '@/api/commentService';
 
 interface PostCardProps {
   post: PostFeed;
@@ -38,6 +41,16 @@ const PostCard = ({ post }: PostCardProps) => {
   const [likeCount, setLikeCount] = useState(_count.likes || 0);
   const [loading, setLoading] = useState(false);
   const [userLoginId, setUserLoginId] = useState("");
+  
+  // Comment states
+  const [comments, setComments] = useState<PostComment[]>([]);
+  const [commentModalVisible, setCommentModalVisible] = useState(false);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentsRefreshing, setCommentsRefreshing] = useState(false);
+  
+  // Reply modal states
+  const [replyModalVisible, setReplyModalVisible] = useState(false);
+  const [selectedCommentForReply, setSelectedCommentForReply] = useState<PostComment | null>(null);
 
   // ✅ Initial check for liked/saved status
   useEffect(() => {
@@ -67,7 +80,7 @@ const PostCard = ({ post }: PostCardProps) => {
         setIsSaved(prev => !prev);
       }
     } catch (error) {
-      console.error("❌ Save toggle failed:", error);
+      // Handle save toggle error silently
     } finally {
       setLoading(false);
     }
@@ -85,19 +98,185 @@ const PostCard = ({ post }: PostCardProps) => {
       if (response.data.success) {
         setLiked((prev) => {
           const newLiked = !prev;
-          // const newCount = newLiked ? likeCount + 1 : Math.max(0, likeCount - 1);
-          // setLikeCount(newCount);
-
+         // const newCount = newLiked ? likeCount + 1 : Math.max(0, likeCount - 1);
+         // setLikeCount(newCount);
           return newLiked;
         });
       }
     } catch (error) {
-      console.error("❌ Like toggle failed:", error);
+      // Handle like toggle error silently
     } finally {
       setLoading(false);
     }
   };
 
+  // Comment handlers
+  const openComments = async () => {
+    setCommentModalVisible(true);
+    setComments([]); // Clear previous comments
+    setCommentsLoading(true);
+    
+    try {
+      const response = await getPostComments(id);
+      if (response.success) {
+        // Filter out any null/undefined comments
+        const validComments = (response.data || []).filter((comment: any) => 
+          comment && comment.id && comment.commentBy
+        );
+        // Organize comments into nested structure on frontend
+        const organizedComments = organizeCommentsIntoNested(validComments);
+        setComments(organizedComments);
+      } else {
+        setComments([]);
+      }
+    } catch (err) {
+      setComments([]);
+    } finally {
+      setCommentsLoading(false);
+    }
+  };
+
+  const handleAddComment = async (text: string, parentCommentId?: string) => {
+    try {
+      const response = await createPostComment(id, text, parentCommentId);
+      if (response.success) {
+        // Refresh comments by fetching from API
+        try {
+          setCommentsRefreshing(true);
+          const refreshResponse = await getPostComments(id);
+          if (refreshResponse.success) {
+            // Filter out any null/undefined comments
+            const validComments = (refreshResponse.data || []).filter((comment: any) => 
+              comment && comment.id && comment.commentBy
+            );
+            // Organize comments into nested structure on frontend
+            const organizedComments = organizeCommentsIntoNested(validComments);
+            setComments(organizedComments);
+          } else {
+            // Fallback to optimistic update if refresh fails
+            if (parentCommentId) {
+              setComments((prev) => 
+                prev.map(comment => 
+                  comment.id === parentCommentId 
+                    ? { 
+                        ...comment, 
+                        replies: [...(comment.replies || []), response.data].filter((reply: any) => 
+                          reply && reply.id && reply.commentBy
+                        )
+                      }
+                    : comment
+                )
+              );
+            } else {
+              if (response.data && response.data.id && response.data.commentBy) {
+                setComments((prev) => [response.data, ...prev]);
+              }
+            }
+          }
+        } catch (refreshError) {
+          // Fallback to optimistic update if refresh fails
+          if (parentCommentId) {
+            setComments((prev) => 
+              prev.map(comment => 
+                comment.id === parentCommentId 
+                  ? { 
+                      ...comment, 
+                      replies: [...(comment.replies || []), response.data].filter((reply: any) => 
+                        reply && reply.id && reply.commentBy
+                      )
+                    }
+                  : comment
+              )
+            );
+          } else {
+            if (response.data && response.data.id && response.data.commentBy) {
+              setComments((prev) => [response.data, ...prev]);
+            }
+          }
+        } finally {
+          setCommentsRefreshing(false);
+        }
+      } else {
+        throw new Error(response.message || "Failed to create comment");
+      }
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  const handleLikeComment = async (commentId: string) => {
+    // TODO: Implement comment like functionality
+    // You can implement this based on your API
+  };
+
+  const handleViewReplies = async (commentId: string) => {
+    try {
+      // Find the comment in the current comments state
+      const findComment = (comments: PostComment[]): PostComment | null => {
+        for (const comment of comments) {
+          if (comment.id === commentId) {
+            return comment;
+          }
+          if (comment.replies) {
+            const found = findComment(comment.replies);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+      
+      const comment = findComment(comments);
+      if (comment) {
+        setSelectedCommentForReply(comment);
+        setReplyModalVisible(true);
+      } else {
+        Alert.alert("Error", "Comment not found");
+      }
+    } catch (error: any) {
+      Alert.alert("Error", "Failed to open replies");
+    }
+  };
+
+  // Handler for when user clicks reply button in CommentModal
+  const handleReplyClick = async (commentId: string) => {
+    try {
+      // Find the comment in the current comments state
+      const findComment = (comments: PostComment[]): PostComment | null => {
+        for (const comment of comments) {
+          if (comment.id === commentId) {
+            return comment;
+          }
+          if (comment.replies) {
+            const found = findComment(comment.replies);
+            if (found) return found;
+          }
+        }
+        return null;
+      };
+      
+      const comment = findComment(comments);
+      if (comment) {
+        setSelectedCommentForReply(comment);
+        setReplyModalVisible(true);
+      } else {
+        Alert.alert("Error", "Comment not found");
+      }
+    } catch (error: any) {
+      Alert.alert("Error", "Failed to open replies");
+    }
+  };
+
+  const handleCloseComments = () => {
+    setCommentModalVisible(false);
+    setComments([]);
+    setCommentsLoading(false);
+    setCommentsRefreshing(false);
+  };
+
+  const handleCloseReplyModal = () => {
+    setReplyModalVisible(false);
+    setSelectedCommentForReply(null);
+  };
 
   return (
     <View style={styles.card}>
@@ -141,16 +320,18 @@ const PostCard = ({ post }: PostCardProps) => {
           {/* Likes */}
           <TouchableOpacity onPress={handleToggleLike} disabled={loading}>
             <View style={styles.engagementItem}>
-              <Ionicons name={likes.length > 0 ? "star" : "star-outline"} size={20} color="black" style={{ marginBottom: 5 }} />
+              <Ionicons name={likes.length > 0 ? "star" : "star-outline"} size={20} color={likes.length > 0 ? "#ffa500" : "black"} style={{ marginBottom: 5 }} />
               <Text style={styles.label}>{formatCount(likeCount)}</Text>
             </View>
           </TouchableOpacity>
 
           {/* Comments */}
-          <View style={styles.engagementItem}>
-            <Image source={require('../../assets/icons/commentIcon.png')} style={styles.iconImage} />
-            <Text style={styles.label}>{formatCount(Number(_count.comments))}</Text>
-          </View>
+          <TouchableOpacity onPress={openComments}>
+            <View style={styles.engagementItem}>
+              <Image source={require('../../assets/icons/commentIcon.png')} style={styles.iconImage} />
+              <Text style={styles.label}>{formatCount(Number(_count.comments))}</Text>
+            </View>
+          </TouchableOpacity>
 
           {/* Shares */}
           <View style={styles.engagementItem}>
@@ -168,6 +349,31 @@ const PostCard = ({ post }: PostCardProps) => {
           />
         </TouchableOpacity>
       </View>
+
+      {/* Comments Modal */}
+      <CommentModal
+        visible={commentModalVisible}
+        onClose={handleCloseComments}
+        comments={comments}
+        loading={commentsLoading}
+        refreshing={commentsRefreshing}
+        onAddComment={handleAddComment}
+        onLikeComment={handleLikeComment}
+        onViewReplies={handleViewReplies}
+        onReplyClick={handleReplyClick}
+        title="Comments"
+      />
+
+      {/* Reply Modal */}
+      {selectedCommentForReply && (
+        <PostReplyModal
+          visible={replyModalVisible}
+          onClose={handleCloseReplyModal}
+          commentId={selectedCommentForReply.id}
+          parentCommentText={selectedCommentForReply.comment}
+          parentCommentUser={selectedCommentForReply.commentBy?.username || 'Unknown User'}
+        />
+      )}
     </View>
   );
 };

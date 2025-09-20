@@ -13,19 +13,19 @@ const VideoPreview = ({ uri }: { uri: string }) => {
       style={styles.previewImage}
       player={player}
       nativeControls={false}
+      allowsFullscreen={false}
+      allowsPictureInPicture={false}
     />
   );
 };
 
 const styles = StyleSheet.create({
   previewImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 4,
-    marginRight: 8,
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
     backgroundColor: '#eee',
   },
+});
 
-})
-
-export default VideoPreview
+export default VideoPreview;

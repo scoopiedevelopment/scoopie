@@ -1,198 +1,141 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useRouter } from "expo-router";
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, Image, ActivityIndicator } from "react-native";
-import { CameraView, useCameraPermissions, CameraType, FlashMode } from "expo-camera";
-import * as ImagePicker from "expo-image-picker";
-import { Ionicons, Feather } from "@expo/vector-icons";
-import ScreenWrapper from "@/components/common/ScreenWrapper";
-import { uploadImage } from "@/api/uploadService";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Modal } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import EnhancedCamera from "../enhancedCamera";
 
-const { width, height } = Dimensions.get("window");
+export default function CameraTab() {
+  const [cameraOpen, setCameraOpen] = useState(false);
+  const [selectedMode, setSelectedMode] = useState<'story' | 'post' | 'clip'>('post');
 
-export default function CustomCamera({ onClose }: { onClose: () => void }) {
-  const router = useRouter();
-  const [permission, requestPermission] = useCameraPermissions();
-  const [cameraType, setCameraType] = useState<CameraType>("back");
-  const [flash, setFlash] = useState<FlashMode>("off");
-  const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
-  const cameraRef = useRef<CameraView>(null);
-  const [loading, setLoading] = useState(false);
-  useEffect(() => {
-    if (!permission) {
-      requestPermission();
-    }
-  }, [permission]);
-
-  const takePicture = async () => {
-    if (cameraRef.current) {
-      const photo = await cameraRef.current.takePictureAsync();
-      setCapturedPhoto(photo?.uri); // photo preview ke liye set karo
-    }
+  const openCamera = (mode: 'story' | 'post' | 'clip') => {
+    setSelectedMode(mode);
+    setCameraOpen(true);
   };
 
-  const pickFromGallery = async () => {
-    router.push("/mediaUpload");
+  const handleClose = () => {
+    setCameraOpen(false);
   };
-
-  const retakePhoto = () => {
-    setCapturedPhoto(null); // wapas camera par
-  };
-
-  const confirmPhoto = async () => {
-    const imageUrls: string[] = [];
-    // yahan photo upload/crop/next screen ka logic
-    setLoading(true)
-    if (capturedPhoto) {
-      const response = await uploadImage(capturedPhoto);
-      if (response.success && response.data.urls?.length > 0) {
-        imageUrls.push(response.data.urls[0]);
-        setLoading(false)
-        router.push({
-          pathname: '/textPostScreen',
-          params: {
-            uploadedImageUrls: encodeURIComponent(JSON.stringify(imageUrls)),
-          },
-        });
-      }
-
-    }
-  };
-
-  if (!permission || !permission.granted) {
-    return <Text style={{ color: "white" }}>Camera permission not granted</Text>;
-  }
 
   return (
-    <ScreenWrapper>
-      <View style={styles.container}>
-        {capturedPhoto ? (
-          // Preview Screen
-          <View style={styles.previewContainer}>
-            <Image source={{ uri: capturedPhoto }} style={styles.previewImage} />
-            <View style={styles.previewButtons}>
-              <TouchableOpacity onPress={retakePhoto} style={styles.retakeButton}>
-                <Text style={styles.buttonText}>Retake</Text>
-              </TouchableOpacity>
-              {!loading && <TouchableOpacity onPress={confirmPhoto} style={styles.confirmButton}>
-                <Text style={styles.buttonText}>Next</Text>
-              </TouchableOpacity>}
-              {loading && <ActivityIndicator size="large" color="#8C5EFF" style={{ margin: 10 }} />}
-            </View>
+    <View style={styles.container}>
+      <LinearGradient
+        colors={['#667eea', '#764ba2']}
+        style={styles.gradient}
+      >
+        <View style={styles.content}>
+          <Text style={styles.title}>Create Content</Text>
+          <Text style={styles.subtitle}>Choose what you want to create</Text>
+          
+          <View style={styles.optionsContainer}>
+            <TouchableOpacity 
+              style={styles.optionButton}
+              onPress={() => openCamera('story')}
+            >
+              <View style={styles.optionIcon}>
+                <Ionicons name="camera" size={32} color="#667eea" />
+              </View>
+              <Text style={styles.optionTitle}>Story</Text>
+              <Text style={styles.optionDescription}>Share moments that disappear in 24 hours</Text>
+            </TouchableOpacity>
 
+            <TouchableOpacity 
+              style={styles.optionButton}
+              onPress={() => openCamera('post')}
+            >
+              <View style={styles.optionIcon}>
+                <Ionicons name="images" size={32} color="#667eea" />
+              </View>
+              <Text style={styles.optionTitle}>Post</Text>
+              <Text style={styles.optionDescription}>Share photos and videos with your followers</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.optionButton}
+              onPress={() => openCamera('clip')}
+            >
+              <View style={styles.optionIcon}>
+                <Ionicons name="videocam" size={32} color="#667eea" />
+              </View>
+              <Text style={styles.optionTitle}>Reel</Text>
+              <Text style={styles.optionDescription}>Create short videos with music and effects</Text>
+            </TouchableOpacity>
           </View>
-        ) : (
-          // Camera Screen
-          <CameraView
-            style={styles.camera}
-            facing={cameraType}
-            flash={flash}
-            ref={cameraRef}
-          >
-            {/* Top Icons */}
-            <View style={styles.topIcons}>
-              <TouchableOpacity onPress={onClose}>
-                <Ionicons name="close" size={28} color="white" />
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setFlash(flash === "off" ? "on" : "off")}>
-                <Ionicons name={flash === "off" ? "flash-off" : "flash"} size={24} color="white" />
-              </TouchableOpacity>
-              <TouchableOpacity>
-                <Feather name="clock" size={24} color="white" />
-              </TouchableOpacity>
-              <TouchableOpacity>
-                <Feather name="grid" size={24} color="white" />
-              </TouchableOpacity>
-              <TouchableOpacity>
-                <Feather name="moon" size={24} color="white" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() =>
-                  setCameraType(cameraType === "back" ? "front" : "back")
-                }
-              >
-                <Ionicons name="camera-reverse" size={24} color="white" />
-              </TouchableOpacity>
-            </View>
+        </View>
+      </LinearGradient>
 
-            {/* Bottom Buttons */}
-            <View style={styles.bottomContainer}>
-              <View style={styles.tabRow}>
-                <Text style={styles.tabText}>Photos</Text>
-                <Text style={styles.tabText}>Clips</Text>
-                <Text style={styles.tabText}>Text</Text>
-              </View>
-
-              <View style={styles.actionRow}>
-                <TouchableOpacity onPress={pickFromGallery}>
-                  <Ionicons name="images" size={32} color="white" />
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress={takePicture} style={styles.captureButton} />
-
-                <TouchableOpacity>
-                  <Ionicons name="refresh" size={32} color="white" />
-                </TouchableOpacity>
-              </View>
-            </View>
-          </CameraView>
-        )}
-      </View>
-    </ScreenWrapper>
+      {/* Enhanced Camera Modal */}
+      <Modal visible={cameraOpen} animationType="slide">
+        <EnhancedCamera onClose={handleClose} mode={selectedMode} />
+      </Modal>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "black" },
-  camera: { flex: 1 },
-  topIcons: {
-    position: "absolute",
-    top: 40,
-    right: 20,
-    alignItems: "flex-end",
-    gap: 20,
+  container: {
+    flex: 1,
   },
-  bottomContainer: {
-    position: "absolute",
-    bottom: 40,
-    width: width,
-    alignItems: "center",
+  gradient: {
+    flex: 1,
   },
-  tabRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    width: "60%",
-    marginBottom: 20,
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
   },
-  tabText: { color: "white", fontSize: 16 },
-  actionRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "60%",
-    alignItems: "center",
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: 'white',
+    marginBottom: 10,
+    textAlign: 'center',
   },
-  captureButton: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: "white",
+  subtitle: {
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.8)',
+    marginBottom: 40,
+    textAlign: 'center',
   },
-  previewContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
-  previewImage: { width: width, height: '80%', resizeMode: "cover" },
-  previewButtons: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    width: "100%",
+  optionsContainer: {
+    width: '100%',
+    maxWidth: 300,
+  },
+  optionButton: {
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderRadius: 20,
     padding: 20,
+    marginBottom: 15,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
-  retakeButton: {
-    padding: 15,
-    backgroundColor: "red",
-    borderRadius: 10,
+  optionIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 15,
   },
-  confirmButton: {
-    padding: 15,
-    backgroundColor: "green",
-    borderRadius: 10,
+  optionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 5,
   },
-  buttonText: { color: "white", fontSize: 16 },
+  optionDescription: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
 });

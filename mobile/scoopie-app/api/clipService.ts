@@ -110,7 +110,9 @@ export const followUser = async (userId: string) => {
 
 export const getComments = async (clipId: string, page: number = 1) => {
   try {
+    console.log('Fetching comments:', clipId, page);
     const response = await apiClient.get(`/comment/get-comments/clip/${clipId}/${page}`);
+    console.log('Comments fetched:', response.data);
     return response.data;
   } catch (error: any) {
     console.error('Error fetching comments:', error?.response || error);
@@ -118,11 +120,28 @@ export const getComments = async (clipId: string, page: number = 1) => {
   }
 };
 
-export const createComment = async (clipId: string, text: string) => {
+export const createComment = async (clipId: string, text: string, parentCommentId?: string) => {
   try {
+    console.log('Creating comment:', clipId, text);
+    console.log('Creating comment:', clipId, text, 'parent:', parentCommentId);
     const response = await apiClient.post('/comment/create', {
       clipId: clipId,
-      text: text
+      comment: text
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Error creating comment:', error?.response || error);
+    throw error;
+  }
+};
+
+export const createChildComment = async (commentId: string, text: string) => {
+  try {
+    console.log('Creating comment:', commentId, text);
+    const response = await apiClient.post('/comment/create', {
+      commentId: commentId,
+      comment: text,
+      parentCommentId: parentCommentId
     });
     return response.data;
   } catch (error: any) {

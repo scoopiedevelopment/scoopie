@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Alert, ViewToken } from "react-native";
+import { useFocusEffect } from '@react-navigation/native';
 import {
   FlatList,
   Image,
@@ -46,6 +47,14 @@ export default function HomeScreen() {
     loadData(1, true);
     loadStories(1);
   }, [activeTab]);
+
+  // Refresh stories when screen comes into focus (e.g., after creating a story)
+  useFocusEffect(
+    useCallback(() => {
+      console.log('Home screen focused, refreshing stories...');
+      loadStories(1);
+    }, [])
+  );
 
   const loadData = async (pageNumber: number, isRefreshing = false) => {
     if (pageNumber === 1 && !isRefreshing && loading) return;
@@ -96,17 +105,69 @@ export default function HomeScreen() {
   const loadStories = async (pageNumber: number) => {
     try {
       const res = await getStories(pageNumber);
-      if (res?.data?.stories) {
+      
+      if (res?.success) {
+        // Server now returns raw stories array, need to group them by user
+        const rawStories = res.data || [];
+        
+        // Group stories by user
+        const userStoriesMap = new Map();
+        rawStories.forEach((story: any) => {
+          const userId = story.userId;
+          if (!userStoriesMap.has(userId)) {
+            userStoriesMap.set(userId, {
+              userId: story.user?.userId || story.userId,
+              username: story.user?.username || 'Unknown',
+              profilePic: story.user?.profilePic || null,
+              stories: []
+            });
+          }
+          userStoriesMap.get(userId).stories.push({
+            id: story.id,
+            userId: story.userId,
+            mediaUrl: story.mediaUrl,
+            mediaType: story.mediaType,
+            createdAt: story.createdAt,
+            expiresAt: story.expiresAt,
+          });
+        });
+        
+        const userStories = Array.from(userStoriesMap.values());
+        
         if (pageNumber === 1) {
-          setStories(res.data.stories);
+          setStories(userStories);
         } else {
-          setStories((prev) => [...prev, ...res.data.stories]);
+          setStories((prev) => [...prev, ...userStories]);
         }
-        setStoryHasMore(res.data.pagination.hasNext);
-        setStoryPage(pageNumber);
+        
+        // Simple pagination logic - if we got fewer stories than expected, no more pages
+        setStoryHasMore(rawStories.length >= 20);
+        setStoryPage(pageNumber + 1);
+      } else {
+        setStoryHasMore(false);
       }
-    } catch (error) {
-      console.error('Error fetching stories:', error);
+    } catch (error: any) {
+      // Handle specific error types
+      if (error.message?.includes('Network connection failed')) {
+        Alert.alert(
+          'Connection Error', 
+          'Please check your internet connection and try again.',
+          [{ text: 'OK' }]
+        );
+      } else if (error.message?.includes('Authentication failed')) {
+        Alert.alert(
+          'Authentication Error', 
+          'Please login again to continue.',
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert(
+          'Error', 
+          error.message || 'Failed to load stories. Please try again.',
+          [{ text: 'OK' }]
+        );
+      }
+      setStoryHasMore(false);
     }
   };
 
@@ -246,27 +307,43 @@ const styles = StyleSheet.create({
   container: { backgroundColor: '#F2F2F2', flex: 1, marginBottom: -50 },
   icon: { marginRight: 12 },
   storyWrapper: {
-    paddingBottom: 10,
-    backgroundColor: '#eee',
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e9ecef',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   storyList: {
-    paddingVertical: 16,
-    paddingLeft: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
   storyItem: {
     alignItems: 'center',
     marginRight: 16,
+    position: 'relative',
+    width: 70,
   },
   storyAvatar: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    marginBottom: 4,
-    backgroundColor: '#eee'
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginBottom: 6,
+    backgroundColor: '#f8f9fa',
+    borderWidth: 3,
+    borderColor: '#7B4DFF',
   },
   storyName: {
-    fontSize: 12,
-    color: '#444',
+    fontSize: 11,
+    color: '#495057',
+    fontWeight: '600',
+    textAlign: 'center',
+    maxWidth: 70,
   },
   tabContainer: {
     flexDirection: 'row',

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   View, Text, TextInput, TouchableOpacity, 
   StyleSheet, Alert, ActivityIndicator, 
-  KeyboardAvoidingView, Platform 
+  KeyboardAvoidingView, Platform, ScrollView
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -11,6 +11,7 @@ import { useAuth } from '../contexts/AuthContext';
 export default function AuthScreen() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,9 +23,15 @@ export default function AuthScreen() {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
-    if (!isLogin && password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
-      return;
+    if (!isLogin && (!username || password !== confirmPassword)) {
+      if (!username) {
+        Alert.alert('Error', 'Please enter a username');
+        return;
+      }
+      if (password !== confirmPassword) {
+        Alert.alert('Error', 'Passwords do not match');
+        return;
+      }
     }
     setLoading(true);
 
@@ -34,7 +41,11 @@ export default function AuthScreen() {
       const response = await fetch(`${apiUrl}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), password: password.trim() }),
+        body: JSON.stringify({ 
+          email: email.trim(), 
+          password: password.trim(),
+          ...(isLogin ? {} : { username: username.trim() })
+        }),
       });
       const data = await response.json();
 
@@ -45,7 +56,7 @@ export default function AuthScreen() {
         } else if (!isLogin) {
           Alert.alert('Success', 'Account created successfully! Please login.');
           setIsLogin(true);
-          setPassword(''); setConfirmPassword('');
+          setPassword(''); setConfirmPassword(''); setUsername('');
         }
       } else {
         Alert.alert('Error', data.message || 'Authentication failed');
@@ -61,16 +72,22 @@ export default function AuthScreen() {
     <LinearGradient colors={['#6a11cb', '#2575fc']} style={styles.gradient}>
       <KeyboardAvoidingView 
         style={styles.container} 
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
       >
-        <View style={styles.header}>
-          <Text style={styles.title}>Scoopie</Text>
-          <Text style={styles.subtitle}>
-            {isLogin ? 'Welcome back 👋' : 'Create your account 🚀'}
-          </Text>
-        </View>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.header}>
+            <Text style={styles.title}>Scoopie</Text>
+            <Text style={styles.subtitle}>
+              {isLogin ? 'Welcome back 👋' : 'Create your account 🚀'}
+            </Text>
+          </View>
 
-        <View style={styles.formCard}>
+          <View style={styles.formCard}>
           <TextInput
             style={styles.input}
             placeholder="Email"
@@ -79,7 +96,23 @@ export default function AuthScreen() {
             onChangeText={setEmail}
             keyboardType="email-address"
             autoCapitalize="none"
+            autoCorrect={false}
+            editable={true}
+            selectTextOnFocus={true}
           />
+          {!isLogin && (
+            <TextInput
+              style={styles.input}
+              placeholder="Username"
+              placeholderTextColor="#aaa"
+              value={username}
+              onChangeText={setUsername}
+              autoCapitalize="none"
+              autoCorrect={false}
+              editable={true}
+              selectTextOnFocus={true}
+            />
+          )}
           <TextInput
             style={styles.input}
             placeholder="Password"
@@ -87,6 +120,10 @@ export default function AuthScreen() {
             value={password}
             onChangeText={setPassword}
             secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
+            editable={true}
+            selectTextOnFocus={true}
           />
           {!isLogin && (
             <TextInput
@@ -96,6 +133,10 @@ export default function AuthScreen() {
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               secureTextEntry
+              autoCapitalize="none"
+              autoCorrect={false}
+              editable={true}
+              selectTextOnFocus={true}
             />
           )}
 
@@ -128,7 +169,8 @@ export default function AuthScreen() {
               </Text>
             </TouchableOpacity>
           </View>
-        </View>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </LinearGradient>
   );
@@ -136,7 +178,12 @@ export default function AuthScreen() {
 
 const styles = StyleSheet.create({
   gradient: { flex: 1 },
-  container: { flex: 1, justifyContent: 'center', padding: 20 },
+  container: { flex: 1, padding: 20 },
+  scrollContent: { 
+    flexGrow: 1, 
+    justifyContent: 'center',
+    paddingVertical: 20
+  },
   header: { marginBottom: 40, alignItems: 'center' },
   title: { fontSize: 36, fontWeight: 'bold', color: '#fff' },
   subtitle: { fontSize: 18, color: '#eee', marginTop: 8 },
@@ -160,6 +207,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     backgroundColor: '#f9f9f9',
+    minHeight: 50,
   },
   button: { borderRadius: 12, overflow: 'hidden', marginTop: 10 },
   buttonGradient: { padding: 15, alignItems: 'center', borderRadius: 12 },
