@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "expo-router";
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  StyleSheet, 
-  Dimensions, 
-  Image, 
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+  Image,
   ActivityIndicator,
   ScrollView,
   Animated,
@@ -50,7 +50,7 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
   const [timer, setTimer] = useState(0);
   const [showTimer, setShowTimer] = useState(false);
   const [currentMode, setCurrentMode] = useState<'story' | 'post' | 'clip'>(mode);
-  
+  const videoRef = useRef<Video>(null);
   const cameraRef = useRef<CameraView>(null);
   const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -59,7 +59,7 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
   useEffect(() => {
     const requestAllPermissions = async () => {
       console.log('Requesting all permissions...');
-      
+
       try {
         // Request camera permission
         if (!permission) {
@@ -67,21 +67,21 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
           const cameraResult = await requestPermission();
           console.log('Camera permission result:', cameraResult);
         }
-        
+
         // Request media library permission for video recording
         if (!mediaLibraryPermission) {
           console.log('Requesting media library permission...');
           const mediaResult = await requestMediaLibraryPermission();
           console.log('Media library permission result:', mediaResult);
         }
-        
+
         // Request audio permission for video recording
         if (!audioPermission) {
           console.log('Requesting audio permission...');
           const audioResult = await requestAudioPermission();
           console.log('Audio permission result:', audioResult);
         }
-        
+
         console.log('Final Camera permission:', permission?.granted ? 'Granted' : 'Denied');
         console.log('Final Media library permission:', mediaLibraryPermission?.granted ? 'Granted' : 'Denied');
         console.log('Final Audio permission:', audioPermission?.granted ? 'Granted' : 'Denied');
@@ -89,7 +89,7 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
         console.error('Error requesting permissions:', error);
       }
     };
-    
+
     requestAllPermissions();
   }, []);
 
@@ -107,7 +107,7 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
   const startTimer = () => {
     setTimer(3);
     setShowTimer(true);
-    
+
     timerIntervalRef.current = setInterval(() => {
       setTimer((prev) => {
         if (prev <= 1) {
@@ -139,11 +139,11 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
 
   const checkAndRequestPermissions = async () => {
     console.log('Checking permissions...');
-    
+
     let cameraGranted = permission?.granted;
     let mediaGranted = mediaLibraryPermission?.granted;
     let audioGranted = audioPermission?.granted;
-    
+
     // Request camera permission if not granted
     if (!cameraGranted) {
       console.log('Requesting camera permission...');
@@ -151,7 +151,7 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
       cameraGranted = cameraResult.granted;
       console.log('Camera permission result:', cameraResult);
     }
-    
+
     // Request media library permission if not granted
     if (!mediaGranted) {
       console.log('Requesting media library permission...');
@@ -159,7 +159,7 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
       mediaGranted = mediaResult.granted;
       console.log('Media library permission result:', mediaResult);
     }
-    
+
     // Request audio permission if not granted
     if (!audioGranted) {
       console.log('Requesting audio permission...');
@@ -167,19 +167,19 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
       audioGranted = audioResult.granted;
       console.log('Audio permission result:', audioResult);
     }
-    
+
     return { cameraGranted, mediaGranted, audioGranted };
   };
 
   const startVideoRecording = async () => {
     console.log('Starting video recording with permission check...');
-    
+
     // Check and request permissions
     const { cameraGranted, mediaGranted, audioGranted } = await checkAndRequestPermissions();
-    
+
     if (!cameraGranted) {
       Alert.alert(
-        'Camera Permission Required', 
+        'Camera Permission Required',
         'Camera permission is required for video recording. Please grant camera permission in your device settings.',
         [
           { text: 'Cancel', style: 'cancel' },
@@ -188,10 +188,10 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
       );
       return;
     }
-    
+
     if (!audioGranted) {
       Alert.alert(
-        'Audio Permission Required', 
+        'Audio Permission Required',
         'Audio permission is required for video recording. Please grant microphone permission in your device settings.',
         [
           { text: 'Cancel', style: 'cancel' },
@@ -200,33 +200,33 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
       );
       return;
     }
-    
+
     // Media library permission is optional for basic recording
     if (!mediaGranted) {
       console.log('Media library permission not granted, but continuing with recording...');
     }
-    
+
     if (!cameraRef.current) {
       console.log('Camera ref is null');
       Alert.alert('Error', 'Camera not ready');
       return;
     }
-    
+
     if (isRecording) {
       console.log('Already recording');
       return;
     }
-    
+
     try {
       console.log('Preparing camera for recording...');
       setIsRecording(true);
       setRecordingDuration(0);
-      
+
       // Wait longer for camera to be fully ready
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       console.log('Camera ready, starting recording...');
-      
+
       // Start recording first, then start duration counter
       const recordingPromise = cameraRef.current.recordAsync({
         quality: '720p',
@@ -239,28 +239,28 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
           extension: '.mov',
         },
       });
-      
+
       console.log('Recording started, beginning duration counter...');
-      
+
       // Start duration counter AFTER recording has started
       recordingIntervalRef.current = setInterval(() => {
         setRecordingDuration(prev => {
           const newDuration = prev + 1;
           console.log('Recording duration:', newDuration);
-          
+
           // Auto-stop for story mode at 15 seconds (but ensure minimum 3 seconds)
           if (currentMode === 'story' && newDuration >= 15 && newDuration >= 3) {
             console.log('Auto-stopping recording at 15 seconds');
             stopVideoRecording();
           }
-          
+
           return newDuration;
         });
       }, 1000);
-      
+
       // Wait for recording to complete
       const video = await recordingPromise;
-      
+
       console.log('Video recorded successfully:', video);
       if (video && video.uri) {
         setCapturedMedia({ uri: video.uri, type: 'video' });
@@ -271,11 +271,11 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
       }
     } catch (error) {
       console.error('Error recording video:', error);
-      
+
       // Handle specific permission errors
       if (error.message?.includes('RECORD_AUDIO') || error.message?.includes('audio')) {
         Alert.alert(
-          'Audio Permission Required', 
+          'Audio Permission Required',
           'Microphone permission is required for video recording. Would you like to try recording without audio?',
           [
             { text: 'Cancel', style: 'cancel' },
@@ -284,7 +284,7 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
         );
       } else if (error.message?.includes('permission')) {
         Alert.alert(
-          'Permission Error', 
+          'Permission Error',
           'Camera recording failed due to permissions. Would you like to try the alternative recording method?',
           [
             { text: 'Cancel', style: 'cancel' },
@@ -293,7 +293,7 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
         );
       } else if (error.message?.includes('stopped before any data')) {
         Alert.alert(
-          'Recording Too Short', 
+          'Recording Too Short',
           'Recording was stopped too quickly. Please use the Timer Recording button for guaranteed success.',
           [
             { text: 'Cancel', style: 'cancel' },
@@ -302,7 +302,7 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
         );
       } else {
         Alert.alert(
-          'Recording Failed', 
+          'Recording Failed',
           'Camera recording failed. Would you like to try the alternative recording method?',
           [
             { text: 'Cancel', style: 'cancel' },
@@ -324,47 +324,47 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
   // Muted video recording (without audio permission)
   const startVideoRecordingMuted = async () => {
     console.log('Starting muted video recording...');
-    
+
     if (!cameraRef.current) {
       console.log('Camera ref is null');
       Alert.alert('Error', 'Camera not ready');
       return;
     }
-    
+
     if (isRecording) {
       console.log('Already recording');
       return;
     }
-    
+
     try {
       setIsRecording(true);
       setRecordingDuration(0);
-      
+
       // Start duration counter
       recordingIntervalRef.current = setInterval(() => {
         setRecordingDuration(prev => {
           const newDuration = prev + 1;
           console.log('Muted recording duration:', newDuration);
-          
+
           // Auto-stop for story mode at 15 seconds
           if (currentMode === 'story' && newDuration >= 15) {
             console.log('Auto-stopping muted recording at 15 seconds');
             stopVideoRecording();
           }
-          
+
           return newDuration;
         });
       }, 1000);
-      
+
       console.log('Calling recordAsync with mute=true...');
-      
+
       // Record with audio muted
       const video = await cameraRef.current.recordAsync({
         quality: '720p',
         maxDuration: currentMode === 'story' ? 15 : 60,
         mute: true, // Force mute
       });
-      
+
       console.log('Muted video recorded successfully:', video);
       if (video && video.uri) {
         setCapturedMedia({ uri: video.uri, type: 'video' });
@@ -391,7 +391,7 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
     if (cameraRef.current && isRecording) {
       console.log('Stopping video recording...');
       console.log('Current recording duration:', recordingDuration);
-      
+
       try {
         cameraRef.current.stopRecording();
         console.log('Stop recording called');
@@ -404,30 +404,30 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
   // Timer-based recording that ensures minimum duration
   const startTimerRecording = async () => {
     console.log('Starting timer-based recording...');
-    
+
     // Check permissions first
     const { cameraGranted, mediaGranted, audioGranted } = await checkAndRequestPermissions();
-    
+
     if (!cameraGranted || !audioGranted) {
       Alert.alert('Permissions Required', 'Camera and audio permissions are required for video recording');
       return;
     }
-    
+
     if (!cameraRef.current || isRecording) {
       return;
     }
-    
+
     try {
       setIsRecording(true);
       setRecordingDuration(0);
-      
+
       console.log('Preparing timer recording...');
-      
+
       // Wait for camera to be ready
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       console.log('Starting timer recording...');
-      
+
       // Start recording
       const recordingPromise = cameraRef.current.recordAsync({
         quality: '720p',
@@ -440,7 +440,7 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
           extension: '.mov',
         },
       });
-      
+
       // Start duration counter
       recordingIntervalRef.current = setInterval(() => {
         setRecordingDuration(prev => {
@@ -449,11 +449,11 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
           return newDuration;
         });
       }, 1000);
-      
+
       // Wait for minimum duration before allowing stop
       const minDuration = currentMode === 'story' ? 3 : 5;
       console.log(`Waiting for minimum ${minDuration} seconds...`);
-      
+
       // Auto-stop after minimum duration
       setTimeout(() => {
         if (cameraRef.current && isRecording) {
@@ -461,10 +461,10 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
           cameraRef.current.stopRecording();
         }
       }, minDuration * 1000);
-      
+
       // Wait for recording to complete
       const video = await recordingPromise;
-      
+
       console.log('Timer recording completed:', video);
       if (video && video.uri) {
         setCapturedMedia({ uri: video.uri, type: 'video' });
@@ -489,30 +489,30 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
   // Hold-to-record method - only stops when user releases
   const startHoldRecording = async () => {
     console.log('Starting hold-to-record...');
-    
+
     // Check permissions first
     const { cameraGranted, mediaGranted, audioGranted } = await checkAndRequestPermissions();
-    
+
     if (!cameraGranted || !audioGranted) {
       Alert.alert('Permissions Required', 'Camera and audio permissions are required for video recording');
       return;
     }
-    
+
     if (!cameraRef.current || isRecording) {
       return;
     }
-    
+
     try {
       setIsRecording(true);
       setRecordingDuration(0);
-      
+
       console.log('Preparing hold recording...');
-      
+
       // Wait for camera to be ready
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       console.log('Starting hold recording...');
-      
+
       // Start recording
       const recordingPromise = cameraRef.current.recordAsync({
         quality: '720p',
@@ -525,7 +525,7 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
           extension: '.mov',
         },
       });
-      
+
       // Start duration counter
       recordingIntervalRef.current = setInterval(() => {
         setRecordingDuration(prev => {
@@ -534,10 +534,10 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
           return newDuration;
         });
       }, 1000);
-      
+
       // Wait for recording to complete
       const video = await recordingPromise;
-      
+
       console.log('Hold recording completed:', video);
       if (video && video.uri) {
         setCapturedMedia({ uri: video.uri, type: 'video' });
@@ -562,18 +562,18 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
   // Guaranteed recording method - uses ImagePicker as fallback
   const startGuaranteedRecording = async () => {
     console.log('Starting guaranteed recording...');
-    
+
     // Check permissions first
     const { cameraGranted, mediaGranted, audioGranted } = await checkAndRequestPermissions();
-    
+
     if (!cameraGranted) {
       Alert.alert('Permissions Required', 'Camera permission is required for video recording');
       return;
     }
-    
+
     try {
       console.log('Using ImagePicker camera for guaranteed recording...');
-      
+
       // Use ImagePicker camera as it's more reliable
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Videos,
@@ -582,13 +582,13 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
         quality: 0.8,
         videoMaxDuration: currentMode === 'story' ? 15 : 60,
       });
-      
+
       console.log('ImagePicker camera result:', result);
-      
+
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const video = result.assets[0];
         console.log('Video recorded successfully:', video);
-        
+
         if (video.uri) {
           setCapturedMedia({ uri: video.uri, type: 'video' });
           console.log('Video set to captured media:', video.uri);
@@ -608,21 +608,21 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
   // Simple recording method - minimal options
   const startSimpleRecording = async () => {
     console.log('Starting simple recording...');
-    
+
     if (!cameraRef.current || isRecording) {
       return;
     }
-    
+
     try {
       setIsRecording(true);
       console.log('Starting simple recording...');
-      
+
       // Simple recording with minimal options
       const video = await cameraRef.current.recordAsync({
         quality: '720p',
         maxDuration: currentMode === 'story' ? 15 : 60,
       });
-      
+
       console.log('Simple recording completed:', video);
       if (video && video.uri) {
         setCapturedMedia({ uri: video.uri, type: 'video' });
@@ -651,9 +651,9 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
 
       if (!result.canceled && result.assets[0]) {
         const asset = result.assets[0];
-        setCapturedMedia({ 
-          uri: asset.uri, 
-          type: asset.type === 'video' ? 'video' : 'photo' 
+        setCapturedMedia({
+          uri: asset.uri,
+          type: asset.type === 'video' ? 'video' : 'photo'
         });
       }
     } catch (error) {
@@ -676,9 +676,9 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
 
       if (!result.canceled && result.assets[0]) {
         const asset = result.assets[0];
-        setCapturedMedia({ 
-          uri: asset.uri, 
-          type: 'video' 
+        setCapturedMedia({
+          uri: asset.uri,
+          type: 'video'
         });
         console.log('Fallback video recorded:', asset.uri);
       }
@@ -693,33 +693,26 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
   };
 
   const confirmMedia = async () => {
+    if (videoRef.current) {
+      await videoRef.current.setStatusAsync({ isMuted: true });
+    }
     if (!capturedMedia) return;
-    
-    console.log('Starting media upload...');
-    console.log('Captured media:', capturedMedia);
-    console.log('Current mode:', currentMode);
-    
+
     setLoading(true);
     try {
       let mediaUrl: string;
-      
+
       if (capturedMedia.type === 'video') {
-        console.log('Uploading video:', capturedMedia.uri);
         const response = await uploadClip(capturedMedia.uri);
-        console.log('Video upload response:', response);
         if (response.success && response.data.url) {
           mediaUrl = response.data.url;
-          console.log('Video upload successful:', mediaUrl);
         } else {
           throw new Error('Failed to upload video');
         }
       } else {
-        console.log('Uploading image:', capturedMedia.uri);
         const response = await uploadImage(capturedMedia.uri);
-        console.log('Image upload response:', response);
         if (response.success && response.data.urls?.length > 0) {
           mediaUrl = response.data.urls[0];
-          console.log('Image upload successful:', mediaUrl);
         } else {
           throw new Error('Failed to upload image');
         }
@@ -732,13 +725,12 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
           mediaUrl: mediaUrl,
           mediaType: capturedMedia.type === 'video' ? 'Video' : 'Image',
         });
-        console.log('Story created successfully:', storyResponse);
-        
+
         // Show success message
         Alert.alert(
-          'Success!', 
+          'Success!',
           'Your story has been uploaded successfully!',
-          [{ 
+          [{
             text: 'OK',
             onPress: () => {
               // Close camera and navigate back
@@ -752,7 +744,7 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
         router.push({
           pathname: '/textPostScreen',
           params: {
-            uploadedImageUrls: capturedMedia.type === 'photo' 
+            uploadedImageUrls: capturedMedia.type === 'photo'
               ? encodeURIComponent(JSON.stringify([mediaUrl]))
               : undefined,
             uploadedVideoUrl: capturedMedia.type === 'video'
@@ -805,10 +797,10 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
         <Text style={styles.permissionSubtext}>
           Camera permission is required for taking photos and videos
         </Text>
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={async () => {
             await requestPermission();
-          }} 
+          }}
           style={styles.permissionButton}
         >
           <Text style={styles.permissionButtonText}>Grant Camera Permission</Text>
@@ -831,25 +823,27 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
                 resizeMode={ResizeMode.COVER}
                 shouldPlay
                 isLooping
+                isMuted={false}
+                ref={videoRef}
               />
             ) : (
               <Image source={{ uri: capturedMedia.uri }} style={styles.previewImage} />
             )}
-            
+
             <View style={styles.previewOverlay}>
               <View style={styles.previewButtons}>
                 <TouchableOpacity onPress={retakeMedia} style={styles.retakeButton}>
                   <Ionicons name="refresh" size={24} color="white" />
                   <Text style={styles.buttonText}>Retake</Text>
                 </TouchableOpacity>
-                
+
                 {!loading && (
                   <TouchableOpacity onPress={confirmMedia} style={styles.confirmButton}>
                     <Ionicons name="checkmark" size={24} color="white" />
                     <Text style={styles.buttonText}>Share</Text>
                   </TouchableOpacity>
                 )}
-                
+
                 {loading && (
                   <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color="#8C5EFF" />
@@ -886,7 +880,7 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
               )}
 
               {/* Debug Status */}
-              <View style={styles.debugStatus}>
+              {/* <View style={styles.debugStatus}>
                 <Text style={styles.debugText}>
                   Camera: {cameraRef.current ? 'Ready' : 'Not Ready'} | 
                   Recording: {isRecording ? 'Yes' : 'No'} | 
@@ -897,33 +891,33 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
                   Media Perm: {mediaLibraryPermission?.granted ? 'Yes' : 'No'} |
                   Audio Perm: {audioPermission?.granted ? 'Yes' : 'No'}
                 </Text>
-              </View>
+              </View> */}
 
               {/* Top Controls */}
               <View style={styles.topControls}>
                 <TouchableOpacity onPress={onClose} style={styles.controlButton}>
                   <Ionicons name="close" size={28} color="white" />
                 </TouchableOpacity>
-                
+
                 <View style={styles.topRightControls}>
-                  <TouchableOpacity onPress={toggleFlash} style={styles.controlButton}>
+                  {/* <TouchableOpacity onPress={toggleFlash} style={styles.controlButton}>
                     <Ionicons 
                       name={flash === "off" ? "flash-off" : "flash"} 
                       size={24} 
                       color="white" 
                     />
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity onPress={startTimer} style={styles.controlButton}>
+                  </TouchableOpacity> */}
+
+                  {/* <TouchableOpacity onPress={startTimer} style={styles.controlButton}>
                     <Ionicons name="timer" size={24} color="white" />
-                  </TouchableOpacity>
-                  
+                  </TouchableOpacity> */}
+
                   <TouchableOpacity onPress={toggleCamera} style={styles.controlButton}>
                     <Ionicons name="camera-reverse" size={24} color="white" />
                   </TouchableOpacity>
-                  
+
                   {/* Video recording button */}
-                  <TouchableOpacity 
+                  {/* <TouchableOpacity 
                     onPress={() => {
                       console.log('Video recording button pressed');
                       console.log('Camera Permission:', permission?.granted);
@@ -934,39 +928,39 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
                     style={[styles.controlButton, { backgroundColor: isRecording ? 'red' : 'rgba(255,0,0,0.7)' }]}
                   >
                     <Ionicons name="videocam" size={20} color="white" />
-                  </TouchableOpacity>
-                  
+                  </TouchableOpacity> */}
+
                   {/* Fallback video recording button */}
-                  <TouchableOpacity 
+                  {/* <TouchableOpacity 
                     onPress={recordVideoFallback}
                     style={[styles.controlButton, { backgroundColor: 'rgba(0,255,0,0.7)' }]}
                   >
                     <Ionicons name="camera" size={20} color="white" />
-                  </TouchableOpacity>
-                  
+                  </TouchableOpacity> */}
+
                   {/* Simple test recording button */}
-                  <TouchableOpacity 
+                  {/* <TouchableOpacity 
                     onPress={startSimpleRecording}
                     style={[styles.controlButton, { backgroundColor: 'rgba(0,0,255,0.7)' }]}
                   >
                     <Ionicons name="play" size={20} color="white" />
-                  </TouchableOpacity>
-                  
+                  </TouchableOpacity> */}
+
                   {/* Timer recording button */}
-                  <TouchableOpacity 
+                  {/* <TouchableOpacity 
                     onPress={startTimerRecording}
                     style={[styles.controlButton, { backgroundColor: 'rgba(255,165,0,0.7)' }]}
                   >
                     <Ionicons name="timer" size={20} color="white" />
-                  </TouchableOpacity>
-                  
+                  </TouchableOpacity> */}
+
                   {/* Hold recording button */}
-                  <TouchableOpacity 
+                  {/* <TouchableOpacity 
                     onPress={startHoldRecording}
                     style={[styles.controlButton, { backgroundColor: 'rgba(0,255,0,0.7)' }]}
                   >
                     <Ionicons name="hand-left" size={20} color="white" />
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
                 </View>
               </View>
 
@@ -998,7 +992,7 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
               {/* Bottom Controls */}
               <View style={styles.bottomControls}>
                 <View style={styles.modeTabs}>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={[styles.modeTab, currentMode === 'story' && styles.activeModeTab]}
                     onPress={() => setCurrentMode('story')}
                   >
@@ -1006,7 +1000,7 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
                       Story
                     </Text>
                   </TouchableOpacity>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={[styles.modeTab, currentMode === 'post' && styles.activeModeTab]}
                     onPress={() => setCurrentMode('post')}
                   >
@@ -1014,7 +1008,7 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
                       Post
                     </Text>
                   </TouchableOpacity>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={[styles.modeTab, currentMode === 'clip' && styles.activeModeTab]}
                     onPress={() => setCurrentMode('clip')}
                   >
@@ -1045,7 +1039,7 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
                         isRecording && styles.recordingButtonInner
                       ]} />
                     </TouchableOpacity>
-                    
+
                     {/* Recording indicator */}
                     {isRecording && (
                       <View style={styles.recordingIndicator}>
@@ -1055,12 +1049,12 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
                     )}
                   </View>
 
-                  <TouchableOpacity onPress={toggleFilters} style={styles.filterButton}>
+                  {/* <TouchableOpacity onPress={toggleFilters} style={styles.filterButton}>
                     <Ionicons name="color-palette" size={32} color="white" />
-                  </TouchableOpacity>
-                  
+                  </TouchableOpacity> */}
+
                   {/* Permission request button */}
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     onPress={async () => {
                       console.log('Requesting permissions...');
                       if (!permission?.granted) {
@@ -1124,6 +1118,7 @@ const styles = StyleSheet.create({
   },
   cameraContainer: {
     flex: 1,
+    borderWidth: 3,
   },
   camera: {
     flex: 1,

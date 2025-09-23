@@ -107,11 +107,7 @@ const StoryViewer = ({ refreshTrigger }: StoryViewerProps) => {
     const player = useVideoPlayer(
         currentStory?.mediaUrl || '',
         (player) => {
-            console.log('Player callback triggered for:', currentStory?.mediaUrl);
-            console.log('Media type:', currentStory?.mediaType);
-            console.log('Is video detected:', isVideo(currentStory?.mediaUrl || '', currentStory?.mediaType));
-            console.log('Player key:', playerKey);
-            console.log('Modal visible:', modalVisible);
+           
             
             if (currentStory?.mediaUrl && isVideo(currentStory.mediaUrl, currentStory.mediaType)) {
                 console.log('Initializing video player for:', currentStory.mediaUrl, 'with key:', playerKey);
@@ -700,7 +696,7 @@ const StoryViewer = ({ refreshTrigger }: StoryViewerProps) => {
                                     />
                                 )}
                                 {/* Debug overlay */}
-                                <View style={styles.debugOverlay}>
+                                {/* <View style={styles.debugOverlay}>
                                     <Text style={styles.debugText}>
                                         Debug: {currentStory?.mediaUrl ? 'Has URL' : 'No URL'} | 
                                         MediaType: {currentStory?.mediaType || 'None'} |
@@ -720,7 +716,7 @@ const StoryViewer = ({ refreshTrigger }: StoryViewerProps) => {
                                     >
                                         <Text style={styles.refreshText}>Refresh</Text>
                                     </TouchableOpacity>
-                                </View>
+                                </View> */}
                             </View>
                         ) : (
                             <Image
@@ -822,6 +818,7 @@ const styles = StyleSheet.create({
     storyItem: {
         alignItems: 'center',
         marginRight: 20,
+        top:4,
         width: 75,
         height: 84,
         justifyContent: 'center',
@@ -832,13 +829,13 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     profilePic: {
-        width: 64,
-        height: 64,
+        width: 60,
+        height: 60,
         borderRadius: 32,
         backgroundColor: '#f8f9fa',
     },
     profilePicUnviewed: {
-        borderWidth: 3,
+        borderWidth: 2,
         borderColor: '#333333',
         shadowColor: '#333333',
         shadowOffset: {
@@ -861,8 +858,8 @@ const styles = StyleSheet.create({
     },
     storyRing: {
         position: 'absolute',
-        width: 68,
-        height: 68,
+        width: 60,
+        height: 60,
         borderRadius: 34,
         borderWidth: 2,
     },
@@ -876,7 +873,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 12,
         fontWeight: '500',
-        marginTop: 8,
+        marginTop: 3,
         maxWidth: 75,
         lineHeight: 14,
     },
@@ -894,12 +891,12 @@ const styles = StyleSheet.create({
     },
     userInfoContainer: {
         position: 'absolute',
-        top: 100,
+        top: 35,
         left: 20,
         flexDirection: 'row',
         alignItems: 'center',
         zIndex: 20,
-        backgroundColor: 'rgba(0,0,0,0.3)',
+        // backgroundColor: 'rgba(0,0,0,0.3)',
         paddingHorizontal: 12,
         paddingVertical: 8,
         borderRadius: 20,
@@ -952,19 +949,18 @@ const styles = StyleSheet.create({
     },
     closeButton: {
         position: 'absolute',
-        top: 50,
+        top: 40,
         right: 20,
         zIndex: 20,
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: 'rgba(0,0,0,0.5)',
         justifyContent: 'center',
         alignItems: 'center',
     },
     progressBarContainer: {
         position: 'absolute',
-        top: 50,
+        top: 25,
         left: 16,
         right: 16,
         flexDirection: 'row',

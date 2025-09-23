@@ -26,8 +26,10 @@
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
         "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.READ_EXTERNAL_STORAGE"
-      ]
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_MEDIA_LOCATION"
+      ],
+      "package": "com.devsharma123.scoopieapp"
     },
     "web": {
       "bundler": "metro",
@@ -65,6 +67,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "4f1cf394-38a1-4d58-ae10-c679245ae91b"
+      }
     }
   }
 }
