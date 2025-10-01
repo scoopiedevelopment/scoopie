@@ -188,11 +188,7 @@ export default {
                         visibility: 'Public'
                     },
                     include: {
-                        media: {
-                            where: {
-                                type: 'Image'
-                            }
-                        },
+                        media: true,
                         user: {
                             select: {
                                 username: true,
