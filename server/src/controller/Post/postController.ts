@@ -8,6 +8,7 @@ import { prisma } from '../../util/prisma';
 import { User } from '../Authentication/types';
 import { isValidObjectId } from 'mongoose';
 import { CreatePostBody } from './types';
+import { MediaType } from '@prisma/client';
 
 
 
@@ -28,9 +29,20 @@ export default {
                     if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(fileExt)) {
                         const moderationResult = await checkImageForNSFW(fileUrl);
                         if( moderationResult?.nudity < 0.7 && moderationResult?.violence < 0.7) {
-                            safeFiles.push(fileUrl);
+                            safeFiles.push({
+                                url: fileUrl,
+                                type: 'Image'
+                            });
                         }
+                        
                     } 
+
+                    if(['.mp4', '.mov', '.avi', '.mkv'].includes(fileExt)) {
+                        safeFiles.push({
+                            url: fileUrl,
+                            type: 'Video'
+                        });
+                    }
                     
                 }
 
@@ -54,9 +66,9 @@ export default {
                     userId: user.userId,
                     text,
                     media: {
-                        create: safeFiles.map((media: string) => ({
-                            url: media,
-                            type: 'Image'
+                        create: safeFiles.map((media: { url: string; type: string; }) => ({
+                            url: media.url,
+                            type: media.type as MediaType
                         }))
                     }
                 }
