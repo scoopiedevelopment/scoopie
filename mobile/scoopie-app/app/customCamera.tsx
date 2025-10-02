@@ -50,6 +50,7 @@ export default function CustomCamera({ onClose }: { onClose: () => void }) {
           pathname: '/textPostScreen',
           params: {
             uploadedImageUrls: encodeURIComponent(JSON.stringify(imageUrls)),
+            mode: 'post', // Custom camera is always for regular posts
           },
         });
       }

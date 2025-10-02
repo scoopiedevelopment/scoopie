@@ -23,6 +23,7 @@ import { useRouter } from 'expo-router';
 import { createClip, createPost, uploadImage } from '@/api/uploadService';
 import { getProfile } from '@/api/profileService';
 import { createStory } from '@/api/storyService';
+import audioManager from '@/utils/audioManager';
 const { width, height } = Dimensions.get("window");
 export default function SecondScreen() {
   const [isVisible, setIsVisible] = useState(false);
@@ -30,9 +31,10 @@ export default function SecondScreen() {
   const [postText, setPostText] = useState('');
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const { uploadedImageUrls, uploadedVideoUrl } = useLocalSearchParams<{
+  const { uploadedImageUrls, uploadedVideoUrl, mode } = useLocalSearchParams<{
     uploadedImageUrls?: string;
     uploadedVideoUrl?: string;
+    mode?: 'post' | 'reel';
   }>();
   const router = useRouter();
 
@@ -64,15 +66,29 @@ export default function SecondScreen() {
 
   const handlePost = async () => {
     try {
+      // Stop all video audio before posting
+      audioManager.stopAllAudio();
+      
+      // Determine if this is a reel (clip) or regular post based on mode
+      const isReel = mode === 'reel';
+      
       if (videoUrl) {
-        await createClip(videoUrl, postText || "");
+        if (isReel) {
+          // For reels, use clip/create API
+          await createClip(videoUrl, postText || "");
+        } else {
+          // For regular posts with video, use post/create API
+          await createPost([videoUrl], postText || "");
+        }
       }
 
       if (imageUrls.length > 0) {
+        // Images always use post/create API
         await createPost(imageUrls, postText || "");
       }
 
       setIsVisible(false);
+      // Navigate away - this will trigger cleanup in VideoPreview components
       router.replace("/(tabs)/tab1");
     } catch (error) {
       console.error("Error while posting ❌:", error);
@@ -81,6 +97,9 @@ export default function SecondScreen() {
 
   const handleStory = async () => {
     try {
+      // Stop all video audio before creating story
+      audioManager.stopAllAudio();
+      
       const storyUrl = videoUrl || imageUrls[0];
       const mediaType = videoUrl ? "Video" : "Image";
 
@@ -90,6 +109,7 @@ export default function SecondScreen() {
       });
 
       setIsVisible(false);
+      // Navigate away - this will trigger cleanup in VideoPreview components
       router.replace("/(tabs)/tab1");
     } catch (error) {
       console.error("Error while creating story ❌:", error);
@@ -113,7 +133,9 @@ export default function SecondScreen() {
             <Ionicons name="close" size={24} color="#000" />
           </TouchableOpacity>
 
-          <Text style={styles.headerTitle}>Text</Text>
+          <Text style={styles.headerTitle}>
+            {mode === 'reel' ? 'Reel' : 'Text'}
+          </Text>
 
           <TouchableOpacity style={styles.postBtn} onPress={() => setIsVisible(true)}>
             <Text style={styles.postBtnText}>Post</Text>

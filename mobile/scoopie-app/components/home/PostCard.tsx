@@ -16,6 +16,7 @@ import { formatCount, calculateTimePeriod } from '@/utils/formatNumber';
 import CommentModal from '../CommentModal';
 import PostReplyModal from '../PostReplyModal';
 import { getPostComments, createPostComment, getPostCommentReplies, PostComment, organizeCommentsIntoNested } from '@/api/commentService';
+import PostMedia from '../common/PostMedia';
 
 interface PostCardProps {
   post: PostFeed;
@@ -300,8 +301,13 @@ const PostCard = ({ post }: PostCardProps) => {
 
       {/* 🔹 Media */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.imageRow}>
-        {media.map((img, index) => (
-          <Image key={index} source={{ uri: img.url }} style={styles.postImage} />
+        {media.map((mediaItem, index) => (
+          <PostMedia 
+            key={index} 
+            url={mediaItem.url} 
+            style={styles.postImage}
+            showPlayButton={true}
+          />
         ))}
       </ScrollView>
 

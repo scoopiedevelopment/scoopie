@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import SettingsHeader from './common/SettingsHeader';
 
 export default function LanguageScreen() {
   const router = useRouter();
@@ -26,17 +27,11 @@ export default function LanguageScreen() {
   );
 
   return (
-    <ScrollView style={styles.container}>
-    
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-                  <Ionicons name="chevron-back" size={24} color="#000000" />
-                </TouchableOpacity>
-        <Text style={styles.headerTitle}>Language</Text>
-      </View>
-
+    <View style={styles.container}>
+      <SettingsHeader title="Language" />
       
-      <Text style={styles.sectionTitle}>Suggested</Text>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <Text style={styles.sectionTitle}>Suggested</Text>
       {suggestedLanguages.map(renderLanguageOption)}
 
       
@@ -44,36 +39,19 @@ export default function LanguageScreen() {
 
       <Text style={styles.sectionTitleBlack}>Languages</Text>
       {otherLanguages.map(renderLanguageOption)}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20,
     backgroundColor: '#FFFFFF',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 40,
-    marginLeft: -4,
-  },
-  backIcon: {
-    width: 20,
-    height: 20,
-    marginRight: -20,
-
-  },
-  headerTitle: {
-    fontFamily: 'Inter',
-    fontWeight: '500',
-    fontSize: 23,
-    lineHeight: 28, 
-    letterSpacing: -0.5,
-    textAlign: 'center',
+  content: {
     flex: 1,
+    paddingHorizontal: 20,
   },
   sectionTitle: {
     fontFamily: 'Inter',

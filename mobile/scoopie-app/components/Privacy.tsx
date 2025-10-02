@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import SettingsHeader from './common/SettingsHeader';
 
 export default function PrivacyScreen() {
   const router = useRouter();
@@ -42,16 +43,10 @@ export default function PrivacyScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.headerText}>Privacy</Text>
-      </View>
+      <SettingsHeader title="Privacy & Security" />
 
       {/* Scrollable content */}
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {sections.map((section, idx) => (
           <View key={idx} style={styles.section}>
             <Text style={styles.sectionTitle}>{section.title}</Text>
@@ -75,21 +70,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    paddingHorizontal: 20,
-    paddingTop: 40,
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  headerText: {
+  content: {
     flex: 1,
-    textAlign: 'center',
-    fontFamily: 'Inter',
-    fontWeight: '500',
-    fontSize: 24,
-    color: '#000000',
+    paddingHorizontal: 20,
   },
   section: {
     marginBottom: 25,

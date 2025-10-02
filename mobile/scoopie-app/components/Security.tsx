@@ -1,23 +1,19 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import SettingsHeader from './common/SettingsHeader';
 
 export default function Security() {
   const router = useRouter();
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#000000" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Security</Text>
-      </View>
+      <SettingsHeader title="Security" />
 
-      {/* Control Section */}
-      <Text style={styles.sectionTitle}>Control</Text>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Control Section */}
+        <Text style={styles.sectionTitle}>Control</Text>
 
       {/* Security Alerts */}
       <View style={styles.row}>
@@ -63,27 +59,19 @@ export default function Security() {
         <Text style={styles.label}>Google Authenticator</Text>
         <Ionicons name="chevron-forward" size={20} color="#000" />
       </View>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF', padding: 20 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 40,
-    marginBottom: 20,
+  container: { 
+    flex: 1, 
+    backgroundColor: '#FFF' 
   },
-  headerTitle: {
+  content: {
     flex: 1,
-    textAlign: 'center',
-    fontFamily: 'Inter',
-    fontWeight: '500',
-    fontSize: 23,
-    letterSpacing: -0.5,
-    marginRight: 24,
-    lineHeight: 40,
+    paddingHorizontal: 20,
   },
   sectionTitle: {
     fontFamily: 'Inter',

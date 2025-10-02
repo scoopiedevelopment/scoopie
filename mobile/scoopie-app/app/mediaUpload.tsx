@@ -40,30 +40,55 @@ const VideoPlayer = ({
   const [isMuted, setIsMuted] = useState(muted);
 
   const player = useVideoPlayer({ uri }, (player) => {
-    player.loop = true;
-    player.muted = true;
-    player.play();
+    if (player) {
+      try {
+        player.loop = true;
+        player.muted = true;
+        // Don't auto-play to prevent background audio
+      } catch (error) {
+        console.log('MediaUpload player initialization error (ignored):', error);
+      }
+    }
   });
 
   useEffect(() => {
-    if (!isFocused) {
-      player.muted = true;
-      player.pause();
-    } else {
-      player.muted = true;
-      setIsMuted(true);
-      player.play();
+    if (player) {
+      try {
+        if (!isFocused) {
+          player.muted = true;
+          player.pause();
+        } else {
+          player.muted = true;
+          setIsMuted(true);
+          // Don't auto-play when focused to prevent background audio
+        }
+      } catch (error) {
+        console.log('Focus change error (ignored):', error);
+      }
     }
   }, [isFocused]);
+
+  // Cleanup: Stop video playback when component unmounts
+  useEffect(() => {
+    return () => {
+      // Don't try to cleanup player on unmount to avoid errors
+    };
+  }, []);
 
   const toggleAudio = () => {
     setIsMuted((prev) => {
       const newState = !prev;
-      player.muted = newState;
-      if (newState) {
-        player.pause();
-      } else {
-        player.play();
+      if (player) {
+        try {
+          player.muted = newState;
+          if (newState) {
+            player.pause();
+          } else {
+            player.play();
+          }
+        } catch (error) {
+          console.log('Toggle audio error (ignored):', error);
+        }
       }
       return newState;
     });
@@ -186,6 +211,7 @@ export default function FirstScreen() {
         params: {
           uploadedImageUrls: encodeURIComponent(JSON.stringify(imageUrls)),
           uploadedVideoUrl: videoUrl ? encodeURIComponent(videoUrl) : '',
+          mode: 'post', // Media upload is always for regular posts
         },
       });
     } catch (err) {

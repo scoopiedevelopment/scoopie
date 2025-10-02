@@ -17,6 +17,7 @@ import {
 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { BlurView } from 'expo-blur';
+import SettingsHeader from './common/SettingsHeader';
 
 const { width } = Dimensions.get('window');
 
@@ -100,13 +101,7 @@ export default function HelpCenter() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Help Center</Text>
-      </View>
+      <SettingsHeader title="Help & Support" />
 
       {/* Tabs */}
       <View style={styles.tabs}>
@@ -135,7 +130,7 @@ export default function HelpCenter() {
       )}
 
       {/* FAQ or Contact Us */}
-      <ScrollView showsVerticalScrollIndicator={false} style={{ marginTop: 20 }}>
+      <ScrollView showsVerticalScrollIndicator={false} style={{ marginTop: 20, paddingHorizontal: 20 }}>
         {activeTab === 'FAQ' ? renderFaqs() : renderContactInfo()}
       </ScrollView>
     </View>
@@ -146,28 +141,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FFF',
-    padding: 20,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 40,
-    marginBottom: 20,
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    fontFamily: 'Inter',
-    fontWeight: '500',
-    fontSize: 23,
-    lineHeight: 40,
-    letterSpacing: -0.5,
-    marginRight: 24,
   },
   tabs: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginBottom: 10,
+    paddingHorizontal: 20,
   },
   tabText: {
     fontFamily: 'Poppins',
@@ -197,6 +176,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     height: 50,
     marginTop: 10,
+    marginHorizontal: 20,
   },
   searchInput: {
     flex: 1,

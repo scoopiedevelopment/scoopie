@@ -6,12 +6,14 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  ScrollView,
 } from 'react-native';
 import { Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
 import { getProfile } from '../api/profileService';
 import apiClient from '../api/apiClient';
+import SettingsHeader from './common/SettingsHeader';
 
 interface ProfileData {
   username: string;
@@ -122,13 +124,9 @@ export default function ManageAccount() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#000" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Manage Account</Text>
-      </View>
+      <SettingsHeader title="Manage Account" />
+
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
 
       {/* Account Information */}
       <Text style={styles.sectionTitle}>Account Information</Text>
@@ -206,26 +204,19 @@ export default function ManageAccount() {
         </Text>
         <MaterialIcons name="chevron-right" size={20} color="#DA0000" />
       </TouchableOpacity>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF', padding: 20 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 30,
-    marginBottom: 20,
+  container: { 
+    flex: 1, 
+    backgroundColor: '#FFF' 
   },
-  headerTitle: {
+  content: {
     flex: 1,
-    textAlign: 'center',
-    fontFamily: 'Inter',
-    fontWeight: '500',
-    fontSize: 23,
-    letterSpacing: -0.5,
-    marginRight: 24,
+    paddingHorizontal: 20,
   },
   sectionTitle: {
     fontFamily: 'Inter',

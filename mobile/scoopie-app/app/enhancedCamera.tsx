@@ -750,6 +750,7 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
             uploadedVideoUrl: capturedMedia.type === 'video'
               ? encodeURIComponent(mediaUrl)
               : undefined,
+            mode: 'post',
           },
         });
       } else if (currentMode === 'clip') {
@@ -758,6 +759,7 @@ export default function EnhancedCamera({ onClose, mode = 'story' }: EnhancedCame
           pathname: '/textPostScreen',
           params: {
             uploadedVideoUrl: encodeURIComponent(mediaUrl),
+            mode: 'reel',
           },
         });
       }
