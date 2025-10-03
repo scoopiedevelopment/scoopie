@@ -11,7 +11,8 @@ export default function RenderClip({ item }: { item: any}) {
   const [thumbnail, setThumbnail] = useState<string | null>(null);
   const [showVideo, setShowVideo] = useState(false);
 
-  const player = useVideoPlayer(videoUri, (player) => {
+  // ✅ must pass object
+  const player = useVideoPlayer({ uri: videoUri }, (player) => {
     player.loop = false;
   });
 
@@ -19,7 +20,7 @@ export default function RenderClip({ item }: { item: any}) {
     const generateThumbnail = async () => {
       try {
         const { uri } = await VideoThumbnails.getThumbnailAsync(videoUri, {
-          time: 1000, 
+          time: 1000,
         });
         setThumbnail(uri);
       } catch (e) {
@@ -34,7 +35,10 @@ export default function RenderClip({ item }: { item: any}) {
       {!showVideo && thumbnail && (
         <TouchableOpacity
           style={styles.thumbnailWrapper}
-          onPress={() => setShowVideo(true)}
+          onPress={() => {
+            setShowVideo(true);
+            player.play(); // ✅ start video
+          }}
         >
           <Image source={{ uri: thumbnail }} style={styles.thumbnail} />
           <View style={styles.playButtonOverlay}>
@@ -48,6 +52,8 @@ export default function RenderClip({ item }: { item: any}) {
           player={player}
           style={styles.video}
           contentFit="contain"
+          allowsFullscreen
+          allowsPictureInPicture
         />
       )}
     </View>

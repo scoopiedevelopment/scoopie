@@ -24,6 +24,10 @@ import SettingsModal from '@/components/common/SettingsModal';
 
 const { width } = Dimensions.get('window');
 const TABS = ['Photos', 'Clips', 'Text'];
+const numColumns = 3;
+const spacing = 10; // gap between items
+const containerPadding = 20; // left + right padding
+const postWidth = (width - containerPadding * 2 - spacing * (numColumns - 1)) / numColumns;
 
 export default function ProfileScreen() {
   const [activeTab, setActiveTab] = useState<'Photos' | 'Clips' | 'Text'>('Photos');
@@ -110,24 +114,25 @@ export default function ProfileScreen() {
     fetchProfileData();
   }, []);
 
-  useEffect(() => {
-    if (activeTab === 'Clips') {
-      fetchClips();
-    } else if (activeTab === 'Photos') {
-      fetchPosts(1);
-    } else if (activeTab === 'Text') {
-      fetchTextPosts(1);
-    }
-  }, [activeTab]);
+ useEffect(() => {
+  if (activeTab === 'Clips' && clips.length === 0) {
+    fetchClips();
+  } else if (activeTab === 'Photos' && posts.length === 0) {
+    fetchPosts(1);
+  } else if (activeTab === 'Text' && textPosts.length === 0) {
+    fetchTextPosts(1);
+  }
+}, [activeTab]);
+const renderPhoto = ({ item }: { item: Post }) => {
+  if (!item?.media || item.media.length === 0) return null;
 
-  const renderPhoto = ({ item }: { item: Post }) => {
+  return (
+    <View style={[styles.postBox, { width: postWidth, height: postWidth }]}>
+      <Image source={{ uri: item.media[0].url }} style={styles.postImage} />
+    </View>
+  );
+};
 
-    return (
-      <View style={styles.postBox}>
-        <Image source={{ uri: item?.media[0]?.url }} style={styles.postImage} />
-      </View>
-    );
-  };
 
 
 
@@ -229,7 +234,7 @@ export default function ProfileScreen() {
               renderItem={renderPhoto}
               keyExtractor={(item, index) => String(item?.id ?? index)}
               numColumns={3}
-              columnWrapperStyle={{ justifyContent: 'space-between', paddingHorizontal: 20 }}
+              columnWrapperStyle={{  paddingHorizontal: 20 }}
               contentContainerStyle={{ flexGrow: 1, paddingBottom: 100, marginTop: 10 }}
               showsVerticalScrollIndicator={false}
               onEndReached={() => {
@@ -283,7 +288,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 15,
-    marginTop: 10
+    marginTop: 10,
+    marginHorizontal:5
   },
   header: {
     paddingTop: 20,
