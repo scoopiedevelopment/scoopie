@@ -33,6 +33,9 @@ const { height, width } = Dimensions.get("window");
 const ReelsScreen = () => {
   const [clips, setClips] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [likedClips, setLikedClips] = useState(new Set());
   const [savedClips, setSavedClips] = useState(new Set());
   const [likeCounts, setLikeCounts] = useState<{ [key: string]: number }>({});
@@ -51,31 +54,61 @@ const ReelsScreen = () => {
 
   // fetch reels
   useEffect(() => {
-    fetchClips();
+    fetchClips(1, true);
   }, []);
 
-  const fetchClips = async () => {
+  const fetchClips = async (pageNum: number = 1, isRefresh: boolean = false) => {
+    if (loading && !isRefresh) return;
+    
     try {
       setLoading(true);
-      const response = await getClipsFeed(1);
+      const response = await getClipsFeed(pageNum);
       if (response.success) {
-        setClips(response.data);
-        setUserId(response.data[0]?.userId || "");
-        const counts: { [key: string]: number } = {};
-        response.data.forEach(
-          (clip: any) => (counts[clip.id] = clip._count?.likes || 0)
-        );
-        setLikeCounts(counts);
+        const newClips = response.data || [];
+        setHasMore(newClips.length > 0);
+        
+        if (isRefresh) {
+          setClips(newClips);
+          setPage(1);
+        } else {
+          setClips(prev => [...prev, ...newClips]);
+        }
+        
+        if (newClips.length > 0) {
+          setUserId(newClips[0]?.userId || "");
+          const counts: { [key: string]: number } = {};
+          newClips.forEach(
+            (clip: any) => (counts[clip.id] = clip._count?.likes || 0)
+          );
+          setLikeCounts(prev => ({ ...prev, ...counts }));
+        }
+      } else {
+        setHasMore(false);
       }
     } catch (e) {
       console.error("Error fetching clips:", e);
       setError("Failed to load reels");
     } finally {
       setLoading(false);
+      if (isRefresh) setRefreshing(false);
     }
   };
 
-  // pause all videos when screen unfocused
+  const onRefresh = () => {
+    setRefreshing(true);
+    setError(null);
+    fetchClips(1, true);
+  };
+
+  const onEndReached = () => {
+    if (hasMore && !loading) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchClips(nextPage, false);
+    }
+  };
+
+  // pause all videos when screen unfocused and reload when focused
   useEffect(() => {
     if (!isFocused) {
       Object.values(videoRefs.current).forEach((video) => {
@@ -84,6 +117,11 @@ const ReelsScreen = () => {
         }
       });
       setCurrentPlaying(null);
+    } else {
+      // When screen becomes focused, refresh the feed to get latest videos
+      if (clips.length > 0) {
+        fetchClips(1, true);
+      }
     }
   }, [isFocused]);
 
@@ -274,16 +312,54 @@ const ReelsScreen = () => {
           <Text style={styles.username}>@{item.user?.username}</Text>
           <Text style={styles.caption}>{item.text}</Text>
         </View>
+
+        {/* Refresh button - only show on first video */}
+        {clips.indexOf(item) === 0 && (
+          <TouchableOpacity 
+            onPress={onRefresh}
+            style={styles.refreshButton}
+            disabled={refreshing}
+          >
+            <Ionicons 
+              name="refresh" 
+              size={24} 
+              color="white" 
+              style={{ opacity: refreshing ? 0.5 : 1 }}
+            />
+          </TouchableOpacity>
+        )}
       </View>
     );
   };
 
-  if (loading)
+  if (loading && clips.length === 0)
     return (
-      <ActivityIndicator size="large" color="gray" style={{ marginTop: 50 }} />
+      <View style={{ flex: 1, backgroundColor: "black", justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" color="white" />
+        <Text style={{ color: "white", marginTop: 10 }}>Loading reels...</Text>
+      </View>
     );
-  if (error)
-    return <Text style={{ color: "red", marginTop: 50 }}>{error}</Text>;
+  
+  if (error && clips.length === 0)
+    return (
+      <View style={{ flex: 1, backgroundColor: "black", justifyContent: "center", alignItems: "center", padding: 20 }}>
+        <Text style={{ color: "red", fontSize: 16, textAlign: "center", marginBottom: 20 }}>{error}</Text>
+        <TouchableOpacity 
+          onPress={() => {
+            setError(null);
+            fetchClips(1, true);
+          }}
+          style={{
+            backgroundColor: "#007AFF",
+            paddingHorizontal: 20,
+            paddingVertical: 10,
+            borderRadius: 8,
+          }}
+        >
+          <Text style={{ color: "white", fontWeight: "bold" }}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
 
   return (
     <View style={{ flex: 1, backgroundColor: "black" }}>
@@ -301,6 +377,15 @@ const ReelsScreen = () => {
           offset: height * index,
           index,
         })}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+        onEndReached={onEndReached}
+        onEndReachedThreshold={0.6}
+        ListFooterComponent={loading && !refreshing ? (
+          <View style={{ paddingVertical: 20 }}>
+            <ActivityIndicator size="large" color="white" />
+          </View>
+        ) : null}
       />
 
       {/* Comments Modal */}
@@ -362,5 +447,16 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 14,
     lineHeight: 18,
+  },
+  refreshButton: {
+    position: "absolute",
+    top: 50,
+    right: 15,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

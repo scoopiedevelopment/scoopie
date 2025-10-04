@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { VideoView, useVideoPlayer } from 'expo-video';
+import { Video, ResizeMode } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
 import * as VideoThumbnails from 'expo-video-thumbnails';
 import { isVideoUrl } from '@/utils/videoUtils';
@@ -20,22 +20,12 @@ const PostMedia: React.FC<PostMediaProps> = ({
   const [showVideo, setShowVideo] = useState(false);
   const [thumbnail, setThumbnail] = useState<string | null>(null);
   const [thumbnailLoading, setThumbnailLoading] = useState(false);
+  const [thumbnailError, setThumbnailError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [videoError, setVideoError] = useState(false);
+  const videoRef = useRef<Video>(null);
   const isMountedRef = useRef(true);
-
-  const player = useVideoPlayer(
-    isVideo ? { uri: url } : '',
-    (player) => {
-      if (isVideo && isMountedRef.current && player) {
-        try {
-          player.loop = false;
-          player.muted = true;
-          // Don't auto-play to prevent background audio
-        } catch (error) {
-          console.log('Player initialization error (ignored):', error);
-        }
-      }
-    }
-  );
 
   useEffect(() => {
     const checkIfVideo = () => {
@@ -43,17 +33,29 @@ const PostMedia: React.FC<PostMediaProps> = ({
       setIsVideo(videoCheck);
       
       if (videoCheck) {
-        generateThumbnail();
+        // Add a small random delay to prevent too many simultaneous thumbnail generations
+        const delay = Math.random() * 1000; // 0-1 second delay
+        const timeoutId = setTimeout(() => {
+          if (isMountedRef.current) {
+            generateThumbnail();
+          }
+        }, delay);
+        
+        // Return cleanup function
+        return () => clearTimeout(timeoutId);
       }
     };
     
-    checkIfVideo();
+    const cleanup = checkIfVideo();
+    return cleanup;
   }, [url]);
 
   const generateThumbnail = async () => {
-    if (!isVideo || thumbnailLoading) return;
+    if (!isVideo || thumbnailLoading || thumbnail) return; // Don't regenerate if already exists
     
     setThumbnailLoading(true);
+    setThumbnailError(false);
+    
     try {
       // Try multiple time points to get a good thumbnail
       const timePoints = [500, 1000, 2000, 5000]; // Try at 0.5s, 1s, 2s, 5s
@@ -67,7 +69,8 @@ const PostMedia: React.FC<PostMediaProps> = ({
           
           if (isMountedRef.current && uri) {
             setThumbnail(uri);
-            console.log(`Thumbnail generated successfully at ${time}ms`);
+            setThumbnailError(false);
+            console.log(`Thumbnail generated successfully at ${time}ms for URL: ${url}`);
             break; // Success, exit the loop
           }
         } catch (timeError) {
@@ -75,13 +78,27 @@ const PostMedia: React.FC<PostMediaProps> = ({
           // Continue to next time point
         }
       }
+      
+      // If all time points failed, set error state
+      if (!thumbnail) {
+        setThumbnailError(true);
+        console.log('All thumbnail generation attempts failed for URL:', url);
+      }
     } catch (error) {
       console.log('All thumbnail generation attempts failed:', error);
-      // Keep thumbnail as null if all attempts fail
+      setThumbnailError(true);
     } finally {
       if (isMountedRef.current) {
         setThumbnailLoading(false);
       }
+    }
+  };
+
+  const retryThumbnailGeneration = () => {
+    if (retryCount < 3) { // Limit retries to prevent infinite loops
+      setRetryCount(prev => prev + 1);
+      setThumbnailError(false);
+      generateThumbnail();
     }
   };
 
@@ -93,47 +110,84 @@ const PostMedia: React.FC<PostMediaProps> = ({
     };
   }, []);
 
-  const handlePlayPress = () => {
-    if (isVideo && isMountedRef.current) {
-      try {
-        setShowVideo(true);
-        if (player) {
-          player.play();
-        }
-      } catch (error) {
-        console.log('Play error (ignored):', error);
+  const handleVideoPress = async () => {
+    try {
+      if (videoError) {
+        // Retry video loading
+        setVideoError(false);
+        setShowVideo(false);
+        setIsPlaying(false);
+        return;
       }
+      
+      if (!showVideo) {
+        setShowVideo(true);
+        setIsPlaying(true);
+        if (videoRef.current) {
+          await videoRef.current.playAsync();
+        }
+      } else {
+        // Toggle play/pause
+        if (videoRef.current) {
+          if (isPlaying) {
+            await videoRef.current.pauseAsync();
+            setIsPlaying(false);
+          } else {
+            await videoRef.current.playAsync();
+            setIsPlaying(true);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Video play error:', error);
+      setVideoError(true);
     }
   };
 
   const handleThumbnailPress = () => {
     // If thumbnail generation failed, try again
-    if (!thumbnail && !thumbnailLoading) {
+    if (thumbnailError && retryCount < 3) {
+      retryThumbnailGeneration();
+    } else if (thumbnail) {
+      handleVideoPress();
+    } else if (!thumbnailLoading) {
+      // If no thumbnail and not loading, try to generate one
       generateThumbnail();
-    } else {
-      handlePlayPress();
     }
   };
 
-  const handleVideoPress = () => {
-    if (!isMountedRef.current) return;
-    
-    try {
-      if (showVideo) {
+  const handleVideoError = () => {
+    console.error('Video load error');
+    setVideoError(true);
+  };
+
+  const handleVideoLoad = () => {
+    console.log('Video loaded successfully');
+    setIsPlaying(true);
+  };
+
+  const handlePlaybackStatusUpdate = (status: any) => {
+    if (status.isLoaded) {
+      setIsPlaying(status.isPlaying);
+      
+      // Reset to thumbnail when video ends
+      if (status.didJustFinish) {
         setShowVideo(false);
-        if (player) {
-          player.pause();
-        }
-      } else {
-        setShowVideo(true);
-        if (player) {
-          player.play();
-        }
+        setIsPlaying(false);
       }
-    } catch (error) {
-      console.log('Video toggle error (ignored):', error);
     }
   };
+
+  // Check if video URL is valid
+  if (isVideo && (!url || url.trim() === '' || url === 'null' || !url.startsWith('http'))) {
+    return (
+      <View style={[styles.container, style]}>
+        <View style={[styles.media, styles.errorContainer]}>
+          <Ionicons name="alert-circle" size={24} color="#666" />
+        </View>
+      </View>
+    );
+  }
 
   if (isVideo) {
     return (
@@ -154,9 +208,15 @@ const PostMedia: React.FC<PostMediaProps> = ({
             ) : (
               <View style={[styles.media, styles.videoPlaceholder]}>
                 <Ionicons name="play-circle" size={40} color="rgba(255,255,255,0.8)" />
-                {!thumbnailLoading && (
+                {thumbnailError && retryCount < 3 && (
                   <View style={styles.retryOverlay}>
                     <Ionicons name="refresh" size={16} color="white" />
+                    <Ionicons name="camera" size={12} color="white" style={{ marginTop: 2 }} />
+                  </View>
+                )}
+                {thumbnailError && retryCount >= 3 && (
+                  <View style={styles.errorOverlay}>
+                    <Ionicons name="alert-circle" size={16} color="white" />
                     <Ionicons name="camera" size={12} color="white" style={{ marginTop: 2 }} />
                   </View>
                 )}
@@ -180,16 +240,32 @@ const PostMedia: React.FC<PostMediaProps> = ({
             onPress={handleVideoPress}
             activeOpacity={0.8}
           >
-            <VideoView
+            <Video
+              ref={videoRef}
+              source={{ uri: url }}
               style={styles.media}
-              player={player}
-              nativeControls={false}
-              allowsFullscreen={false}
-              allowsPictureInPicture={false}
+              resizeMode={ResizeMode.COVER}
+              shouldPlay={true}
+              isLooping={false}
+              isMuted={true}
+              onError={handleVideoError}
+              onLoad={handleVideoLoad}
+              onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
             />
-            <View style={styles.videoOverlay}>
-              <Ionicons name="pause" size={20} color="white" />
-            </View>
+            {/* Play/Pause overlay */}
+            {!isPlaying && (
+              <View style={styles.playPauseOverlay}>
+                <View style={styles.playButtonOverlay}>
+                  <Ionicons name="play" size={20} color="white" />
+                </View>
+              </View>
+            )}
+            {videoError && (
+              <View style={styles.errorOverlay}>
+                <Ionicons name="alert-circle" size={16} color="white" />
+                <Ionicons name="refresh" size={12} color="white" style={{ marginTop: 2 }} />
+              </View>
+            )}
           </TouchableOpacity>
         )}
       </View>
@@ -233,13 +309,15 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 8,
   },
-  videoOverlay: {
+  playPauseOverlay: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    borderRadius: 15,
-    padding: 6,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.3)',
   },
   loadingOverlay: {
     position: 'absolute',
@@ -258,6 +336,20 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.6)',
     borderRadius: 15,
     padding: 6,
+    alignItems: 'center',
+  },
+  errorOverlay: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(255,0,0,0.6)',
+    borderRadius: 15,
+    padding: 6,
+    alignItems: 'center',
+  },
+  errorContainer: {
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
     alignItems: 'center',
   },
 });

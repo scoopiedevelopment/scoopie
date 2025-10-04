@@ -36,6 +36,9 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [clips, setClips] = useState<Clip[]>([]);
   const [clipLoading, setClipLoading] = useState(false);
+  const [clipPage, setClipPage] = useState(1);
+  const [hasMoreClips, setHasMoreClips] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [postPage, setPostPage] = useState(1);
   const [postLoading, setPostLoading] = useState(false);
@@ -61,22 +64,41 @@ export default function ProfileScreen() {
     }
   };
 
-  const fetchPosts = async (page: number = 1) => {
-    if (postLoading || !hasMorePosts) return;
+  const fetchPosts = async (page: number = 1, isRefresh: boolean = false) => {
+    if (postLoading && !isRefresh) return;
     setPostLoading(true);
     try {
       const response = await getUserPosts(page);
-
-      const newPosts = response.data.post;
+      const newPosts = response.data.post || [];
       const pagination = response.data.pagination;
 
-      setPosts((prev) => (page === 1 ? newPosts : [...prev, ...newPosts]));
+      // Filter out posts with null or invalid media URLs
+      const validPosts = newPosts.filter(post => 
+        post.media && 
+        post.media.length > 0 && 
+        post.media.some(media => 
+          media.url && 
+          media.url.trim() !== '' && 
+          media.url !== 'null' &&
+          media.url.startsWith('http')
+        )
+      );
+
       setHasMorePosts(pagination.hasNext);
+      
+      if (isRefresh) {
+        setPosts(validPosts);
+        setPostPage(1);
+      } else {
+        setPosts(prev => [...prev, ...validPosts]);
+      }
+      
       setPostPage(page);
     } catch (error) {
       console.error('Failed to load posts:', error);
     } finally {
       setPostLoading(false);
+      if (isRefresh) setRefreshing(false);
     }
   };
 
@@ -98,15 +120,37 @@ export default function ProfileScreen() {
     }
   };
 
-  const fetchClips = async (page: number = 1) => {
+  const fetchClips = async (page: number = 1, isRefresh: boolean = false) => {
+    if (clipLoading && !isRefresh) return;
     setClipLoading(true);
     try {
       const response: ClipResponse = await getUserClips(page);
-      setClips(response.data.clips);
+      const newClips = response.data.clips || [];
+      const pagination = response.data.pagination;
+      
+      // Filter out clips with null or invalid video URLs
+      const validClips = newClips.filter(clip => 
+        clip.video && 
+        clip.video.trim() !== '' && 
+        clip.video !== 'null' &&
+        clip.video.startsWith('http')
+      );
+      
+      setHasMoreClips(pagination.hasNext);
+      
+      if (isRefresh) {
+        setClips(validClips);
+        setClipPage(1);
+      } else {
+        setClips(prev => [...prev, ...validClips]);
+      }
+      
+      setClipPage(page);
     } catch (error) {
       console.error('Failed to load clips:', error);
     } finally {
       setClipLoading(false);
+      if (isRefresh) setRefreshing(false);
     }
   };
 
@@ -114,15 +158,36 @@ export default function ProfileScreen() {
     fetchProfileData();
   }, []);
 
- useEffect(() => {
-  if (activeTab === 'Clips' && clips.length === 0) {
-    fetchClips();
-  } else if (activeTab === 'Photos' && posts.length === 0) {
-    fetchPosts(1);
-  } else if (activeTab === 'Text' && textPosts.length === 0) {
-    fetchTextPosts(1);
-  }
-}, [activeTab]);
+  useEffect(() => {
+    if (activeTab === 'Clips' && clips.length === 0) {
+      fetchClips(1, true);
+    } else if (activeTab === 'Photos' && posts.length === 0) {
+      fetchPosts(1, true);
+    } else if (activeTab === 'Text' && textPosts.length === 0) {
+      fetchTextPosts(1);
+    }
+  }, [activeTab]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    if (activeTab === 'Clips') {
+      fetchClips(1, true);
+    } else if (activeTab === 'Photos') {
+      fetchPosts(1, true);
+    } else if (activeTab === 'Text') {
+      fetchTextPosts(1);
+    }
+  };
+
+  const onEndReached = () => {
+    if (activeTab === 'Clips' && hasMoreClips && !clipLoading) {
+      fetchClips(clipPage + 1, false);
+    } else if (activeTab === 'Photos' && hasMorePosts && !postLoading) {
+      fetchPosts(postPage + 1, false);
+    } else if (activeTab === 'Text' && hasMoreTextPosts && !textLoading) {
+      fetchTextPosts(textPage + 1);
+    }
+  };
 const renderPhoto = ({ item }: { item: Post }) => {
   if (!item?.media || item.media.length === 0) return null;
 
@@ -157,9 +222,22 @@ const renderPhoto = ({ item }: { item: Post }) => {
             <Ionicons name="arrow-back" size={22} color="#000" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Profile</Text>
-          <TouchableOpacity onPress={() => setSettingsVisible(true)}>
-            <Feather name="more-vertical" size={22} color="#000" />
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <TouchableOpacity 
+              style={styles.refreshBtn} 
+              onPress={onRefresh}
+              disabled={refreshing}
+            >
+              <Ionicons 
+                name="refresh" 
+                size={20} 
+                color={refreshing ? "#999" : "#000"} 
+              />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setSettingsVisible(true)}>
+              <Feather name="more-vertical" size={22} color="#000" />
+            </TouchableOpacity>
+          </View>
         </LinearGradient>
         <ProfileTop profileData={profileData} />
         <ToggleBtnProfiles />
@@ -192,20 +270,18 @@ const renderPhoto = ({ item }: { item: Post }) => {
             keyExtractor={(item) => item.id.toString()}
             contentContainerStyle={{ paddingBottom: 100, marginTop: 10, paddingHorizontal: 20 }}
             showsVerticalScrollIndicator={false}
-            onEndReached={() => {
-              if (hasMoreTextPosts && !textLoading) {
-                fetchTextPosts(textPage + 1);
-              }
-            }}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            onEndReached={onEndReached}
             onEndReachedThreshold={0.5}
             ListFooterComponent={
-              textLoading ? (
+              textLoading && !refreshing ? (
                 <ActivityIndicator size="small" color="#7B4DFF" style={{ margin: 10 }} />
               ) : null
             }
             ListEmptyComponent={
               !textLoading ? (
-                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 50 }}>
                   <Text style={{ color: 'grey', fontSize: 16 }}>No text posts available</Text>
                 </View>
               ) : null
@@ -213,20 +289,32 @@ const renderPhoto = ({ item }: { item: Post }) => {
           />
         )
           : activeTab === 'Clips' ? (
-            clipLoading ? (
-              <ActivityIndicator size="large" color="#7B4DFF" style={{ marginTop: 20 }} />
-            ) : (
-              <FlatList
-                key="clips"
-                data={clips}
-                renderItem={renderClip}
-                keyExtractor={(item) => item.id}
-                numColumns={3}
-                columnWrapperStyle={{ paddingHorizontal: 20, gap: 10 }}
-                contentContainerStyle={{ paddingBottom: 100, marginTop: 10 }}
-                showsVerticalScrollIndicator={false}
-              />
-            )
+            <FlatList
+              key="clips"
+              data={clips}
+              renderItem={renderClip}
+              keyExtractor={(item) => item.id}
+              numColumns={3}
+              columnWrapperStyle={{ paddingHorizontal: 20, gap: 10 }}
+              contentContainerStyle={{ paddingBottom: 100, marginTop: 10 }}
+              showsVerticalScrollIndicator={false}
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              onEndReached={onEndReached}
+              onEndReachedThreshold={0.5}
+              ListFooterComponent={
+                clipLoading && !refreshing ? (
+                  <ActivityIndicator size="small" color="#7B4DFF" style={{ margin: 10 }} />
+                ) : null
+              }
+              ListEmptyComponent={
+                !clipLoading ? (
+                  <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 50 }}>
+                    <Text style={{ color: 'grey', fontSize: 16 }}>No clips available</Text>
+                  </View>
+                ) : null
+              }
+            />
           ) : (
             <FlatList
               key="photos"
@@ -234,27 +322,26 @@ const renderPhoto = ({ item }: { item: Post }) => {
               renderItem={renderPhoto}
               keyExtractor={(item, index) => String(item?.id ?? index)}
               numColumns={3}
-              columnWrapperStyle={{  paddingHorizontal: 20 }}
+              columnWrapperStyle={{ paddingHorizontal: 20 }}
               contentContainerStyle={{ flexGrow: 1, paddingBottom: 100, marginTop: 10 }}
               showsVerticalScrollIndicator={false}
-              onEndReached={() => {
-                if (hasMorePosts && !postLoading) {
-                  fetchPosts(postPage + 1);
-                }
-              }}
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              onEndReached={onEndReached}
               onEndReachedThreshold={0.5}
               ListFooterComponent={
-                postLoading ? (
+                postLoading && !refreshing ? (
                   <ActivityIndicator size="small" color="#7B4DFF" style={{ margin: 10 }} />
                 ) : null
               }
               ListEmptyComponent={
-                <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                  <Text style={{ color: 'grey', fontSize: 16 }}>No data available</Text>
-                </View>
+                !postLoading ? (
+                  <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 50 }}>
+                    <Text style={{ color: 'grey', fontSize: 16 }}>No photos available</Text>
+                  </View>
+                ) : null
               }
             />
-
           )}
       </View>
       
@@ -312,5 +399,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: '40%',
     left: '40%',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  refreshBtn: {
+    padding: 4,
   },
 });

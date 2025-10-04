@@ -8,6 +8,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Animated,
 } from 'react-native';
 import { Ionicons } from "@expo/vector-icons";
 import apiClient from "../../api/apiClient";
@@ -39,9 +40,12 @@ const PostCard = ({ post }: PostCardProps) => {
 
   const [isSaved, setIsSaved] = useState(false);
   const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(_count.likes || 0);
   const [loading, setLoading] = useState(false);
   const [userLoginId, setUserLoginId] = useState("");
+  const [likeAnimation] = useState(new Animated.Value(1));
+  
+  // Track if user has toggled like status (for proper toggle behavior)
+  const [userToggledLike, setUserToggledLike] = useState(false);
   
   // Comment states
   const [comments, setComments] = useState<PostComment[]>([]);
@@ -61,8 +65,13 @@ const PostCard = ({ post }: PostCardProps) => {
         const loginId = response.data.profile.userId;
         setUserLoginId(loginId);
 
-        setLiked(likes?.some((like: any) => like.userId === loginId) || false);
+        // Check if current user has liked this post
+        const userHasLiked = likes?.some((like: any) => like.userId === loginId) || false;
+        setLiked(userHasLiked);
         setIsSaved(savedBy?.some((saved: any) => saved.userId === loginId) || false);
+        
+        // Reset toggle flag when data is reloaded
+        setUserToggledLike(false);
       }
     };
     getProfileData();
@@ -89,7 +98,30 @@ const PostCard = ({ post }: PostCardProps) => {
 
   const handleToggleLike = async () => {
     if (loading || !userLoginId) return;
+    
+    // Animate button press
+    Animated.sequence([
+      Animated.timing(likeAnimation, {
+        toValue: 0.8,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(likeAnimation, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    
+    // Optimistic update - change color immediately (don't change count)
+    const wasLiked = liked;
+    const newLiked = !liked;
+    
+    // Update UI immediately - only change the like status, not the count
+    setLiked(newLiked);
+    setUserToggledLike(true); // Mark that user has toggled
     setLoading(true);
+    
     try {
       const response = await apiClient.post("/like/toggle", {
         postId: id,
@@ -97,15 +129,18 @@ const PostCard = ({ post }: PostCardProps) => {
       });
 
       if (response.data.success) {
-        setLiked((prev) => {
-          const newLiked = !prev;
-         // const newCount = newLiked ? likeCount + 1 : Math.max(0, likeCount - 1);
-         // setLikeCount(newCount);
-          return newLiked;
-        });
+        // API call successful, keep the optimistic update
+        console.log('Like toggle successful');
+      } else {
+        // Revert optimistic update on failure
+        setLiked(wasLiked);
+        setUserToggledLike(false); // Reset toggle flag on error
       }
     } catch (error) {
-      // Handle like toggle error silently
+      // Revert optimistic update on error
+      setLiked(wasLiked);
+      setUserToggledLike(false); // Reset toggle flag on error
+      console.error('Like toggle error:', error);
     } finally {
       setLoading(false);
     }
@@ -324,11 +359,23 @@ const PostCard = ({ post }: PostCardProps) => {
           </View>
 
           {/* Likes */}
-          <TouchableOpacity onPress={handleToggleLike} disabled={loading}>
-            <View style={styles.engagementItem}>
-              <Ionicons name={likes.length > 0 ? "star" : "star-outline"} size={20} color={likes.length > 0 ? "#ffa500" : "black"} style={{ marginBottom: 5 }} />
-              <Text style={styles.label}>{formatCount(likeCount)}</Text>
-            </View>
+          <TouchableOpacity 
+            onPress={handleToggleLike} 
+            disabled={loading}
+            activeOpacity={0.7}
+            style={styles.likeButton}
+          >
+            <Animated.View style={[styles.engagementItem, { transform: [{ scale: likeAnimation }] }]}>
+              {/* Smart like status: show filled if user liked OR if there are likes and user hasn't toggled */}
+              <Ionicons 
+                name={(liked || (!userToggledLike && likes.length > 0)) ? "star" : "star-outline"} 
+                size={20} 
+                color={(liked || (!userToggledLike && likes.length > 0)) ? "#ffa500" : "black"} 
+                style={{ marginBottom: 5 }} 
+              />
+              {/* Show original like count from API, not optimistic count */}
+              <Text style={styles.label}>{formatCount(_count.likes || 0)}</Text>
+            </Animated.View>
           </TouchableOpacity>
 
           {/* Comments */}
@@ -401,6 +448,11 @@ const styles = StyleSheet.create({
   engagementItem: { alignItems: 'center', marginRight: 40 },
   iconImage: { width: 20, height: 20, resizeMode: 'contain', marginBottom: 4 },
   label: { fontSize: 12, color: '#666', marginTop: 4, textAlign: 'center' },
+  likeButton: {
+    borderRadius: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+  },
 });
 
 export default PostCard;
